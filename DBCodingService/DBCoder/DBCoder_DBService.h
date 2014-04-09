@@ -11,20 +11,23 @@
 
 typedef void(^DBStatement)(NSString * query, NSArray * args);
 typedef id(^DBInsertingBlock)(id<DBCoding> object, Class objectClass);
+typedef void(^DBInsertingForeignBlock)(id<DBCoding> object, NSString *foreignKey);
+
 
 @interface DBCoder(DBService)
-
-- (void) encodingRootObjectBlock:(void(^)(void)) block;
 
 + (BOOL) isCorrectPrimaryKey:(id) pkKey;
 - (BOOL) havePrimaryKey;
 - (void) setPrimaryKey:(id) pkValue;
 - (id) primaryKey;
+- (void) setPrimaryKeyColumn:(NSString *)pkColumn;
 
 
-- (void) enumerateToOneRelatedObjects:(DBInsertingBlock)block;
+- (void) enumerateOneToOneRelatedObjects:(DBInsertingBlock)block;
 
-- (void) enumerateToManyRelationCoders:(void(^)(DBCoder * connection_coder))block;
+- (void) enumerateManyToManyRelationCoders:(void(^)(DBCoder * connection_coder, DBTableConnection *connection))block;
+
+- (void) enumerateOneToManyRelatedObjects:(DBInsertingForeignBlock)block;
 
 /* Init for decoding */
 - (id) initWithResultSet:(FMResultSet *) resultSet dbService:(DBCodingService *) service;

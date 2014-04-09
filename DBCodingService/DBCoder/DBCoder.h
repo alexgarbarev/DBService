@@ -27,29 +27,41 @@ typedef void(^DBDecodingBlock)(DBCoder * table_decoder);
  * For example if you encode DBCoding object for column 'foreign_object' and save, QliqDBService initially saves 'to-one'
  * related objects and then set it's primary key for 'foreign_object' column when save root object  */
 
-/* Encode methods */
-- (void)encodeObject:(id)object forColumn:(NSString *)column;
-- (void)encodeObjects:(NSArray *)objects connection:(DBTableConnection *)connection coding:(DBCodingBlock)codingBlock;
-- (void)encodeObject:(id)object withSchemeClass:(Class)objectClass forColumn:(NSString *)column;
+#pragma mark - Encoding
 
-/* Decode methods */
+- (void)encodeObject:(id)object forColumn:(NSString *)column;
+- (void)encodeObject:(id)object withSchemeClass:(Class)objectClass forColumn:(NSString *)column;
+- (void)encodeObjects:(NSArray *)objects connection:(DBTableConnection *)connection coding:(DBCodingBlock)codingBlock;
+
+/** Encode one-to-many objects.
+  * @param foreignKeyColumn column in another table which refer to current objects row */
+- (void)encodeObjects:(NSArray *)objects withForeignKeyColumn:(NSString *)foreignKeyColumn;
+
+#pragma mark - Decoding
+
 - (id)decodeObjectForColumn:(NSString *)column;
+- (id)decodeObjectOfClass:(Class)objectClass forColumn:(NSString *)column;
+- (id)decodeObjectOfClass:(Class)objectClass withSchemeClass:(Class)schemeClass forColumn:(NSString *)column;
+
+/** Decode one-to-many objects */
+- (NSArray *)decodeObjectsOfClass:(Class)schemeClass withForeignKeyColumn:(NSString *)foreignKeyColumn;
+
+/** Decode many-to-many objects */
 - (void)decodeObjectsFromConnection:(DBTableConnection *)connection decoding:(DBDecodingBlock)decodingBlock;
-- (id)decodeDBObjectOfClass:(Class)objectClass forColumn:(NSString *)column;
-- (id)decodeDBObjectOfClass:(Class)objectClass withSchemeClass:(Class)schemeClass forColumn:(NSString *)column;
+
 @end
 
 @protocol DBCoding <NSObject>
 
 /* Do not call this method directly to init object with coder.
  * Use objectOfClass:fromDecoder: in QliqDBService instead */
-- (id) initWithDBCoder:(DBCoder *) decoder;
+- (id)initWithDBCoder:(DBCoder *)decoder;
 
-- (void) encodeWithDBCoder:(DBCoder *) coder;
+- (void)encodeWithDBCoder:(DBCoder *)coder;
 
-- (NSString *) dbPKProperty; //KVC key for property which store primary key
+- (NSString *)dbPKProperty; //KVC key for property which store primary key
 
-+ (NSString *) dbTable;      // table name for object
-+ (NSString *) dbPKColumn;   // primary key column name
++ (NSString *)dbTable;      // table name for object
++ (NSString *)dbPKColumn;   // primary key column name
 
 @end

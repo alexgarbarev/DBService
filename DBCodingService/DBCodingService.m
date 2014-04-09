@@ -106,16 +106,18 @@
 
 #pragma mark - Changing DB
 
-- (void) removeObjectsInCoder:(DBCoder *) coder{
-    [coder enumerateToOneRelatedObjects:^id(id<DBCoding> object, Class objectClass) {
+- (void)removeObjectsInCoder:(DBCoder *)coder
+{
+    [coder enumerateOneToOneRelatedObjects:^id(id<DBCoding> object, Class objectClass) {
         return nil;
     }];
 }
 
-//To handle to-one relations
-- (void) replaceObjectsInCoder:(DBCoder *) coder{
+//Saving one-to-one relations
+- (void)replaceObjectsByIdsInCoder:(DBCoder *)coder
+{
     //replace all db object with it's ids
-    [coder enumerateToOneRelatedObjects:^id(id<DBCoding> object, Class objectClass) {
+    [coder enumerateOneToOneRelatedObjects:^id(id<DBCoding> object, Class objectClass) {
         __block id insertedId = nil;
         
         [self save:object withSchemeClass:objectClass completion:^(BOOL wasInserted, id objectId, NSError *error) {
@@ -129,23 +131,36 @@
     }];
 }
 
-//to handle to-many relations
-- (void) saveRelationsWithId:(id)objectId inCoder:(DBCoder *)coder{
+//Saving one-to-many relations
+- (void)saveOneToManyWithId:(id)objectId inCoder:(DBCoder *)coder
+{
+    [coder enumerateOneToManyRelatedObjects:^(id<DBCoding> object, NSString *foreignKey)
+    {
+        DBCoder *coder = [[DBCoder alloc] initWithDBObject:object as:[object class]];
+        [coder encodeObject:objectId forColumn:foreignKey];
     
-    [coder enumerateToManyRelationCoders:^(DBCoder *connection_coder) {
-        /* Replace objects with their ID's */
-        [self replaceObjectsInCoder:connection_coder];
-        
-        [connection_coder setPrimaryKey:objectId];
-        
-        /* Insert Or Update table*/
-        [self insert:connection_coder update:YES error:nil];
+        [self saveCoder:coder mode:DBModeAll completion:^(BOOL wasInserted, id objectId, NSError *error) {
+            if (wasInserted) {
+                [self setPrimaryKey:objectId forObject:object asClass:[object class]];
+            }
+            if (error){
+                NSLog(@"%@",[error localizedDescription]);
+            }
+        }];
     }];
-    
 }
 
-- (void) save:(id<DBCoding>) object withSchemeClass:(Class)objectClass mode:(DBMode) mode completion:(DBSaveCompletion)completion{
-    
+//Saving handle many-to-many relations
+- (void)saveManyToManyWithId:(id)objectId inCoder:(DBCoder *)coder
+{
+    [coder enumerateManyToManyRelationCoders:^(DBCoder *connection_coder, DBTableConnection *connection) {
+        [connection_coder encodeObject:objectId forColumn:connection.encoderColumn];
+        [self saveCoder:connection_coder mode:DBModeAll completion:nil];
+    }];
+}
+
+- (void)save:(id<DBCoding>) object withSchemeClass:(Class)objectClass mode:(DBMode) mode completion:(DBSaveCompletion)completion
+{
     if (!object){
         NSError * error = [NSError errorWithCode:DBErrorCodeObjectIsNil description:@"Object to save can't be nil"];
         if (completion) completion(0, dbPrimaryKeyUndefined, error);
@@ -154,46 +169,58 @@
     
     DBCoder * coder = [[DBCoder alloc] initWithDBObject:object as:objectClass];
     
+    [self saveCoder:coder mode:mode completion:^(BOOL wasInserted, id objectId, NSError *error) {
+       
+        if (wasInserted) {
+            /* Set Primary Key */
+            [self setPrimaryKey:objectId forObject:object asClass:objectClass];
+        }
+        
+        if (completion) {
+            completion(wasInserted, objectId, error);
+        }
+    }];
+}
+
+- (void)saveCoder:(DBCoder *)coder mode:(DBMode)mode completion:(DBSaveCompletion)completion
+{
     BOOL wasInserted = NO;
     id objectId = nil;
     NSError * error = nil;
     
-    if (mode & DBModeToOne){
-        [self replaceObjectsInCoder:coder];
+    if (mode & DBModeOneToOne){
+        [self replaceObjectsByIdsInCoder:coder];
     }else{
         [self removeObjectsInCoder:coder];
     }
     
-    if (![self isExistCoder:coder]){
+    if (![self isExistCoder:coder]) {
         wasInserted = YES;
-        
         NSNumber * insertedId = [self insert:coder update:NO error:&error];
-        
         objectId = [coder havePrimaryKey] ? [coder primaryKey] : insertedId;
-
-        /* Set Primary Key */
-        [self setPrimaryKey:objectId forObject:object asClass:objectClass];
-        
-    }else{
+    } else {
         [self update:coder error:&error];
-        
         objectId = [coder primaryKey];
     }
     
-    if (mode & DBModeToMany){
-        [self saveRelationsWithId:objectId inCoder:coder];
+    if (mode & DBModeManyToMany){
+        [self saveManyToManyWithId:objectId inCoder:coder];
+    }
+    if (mode & DBModeOneToMany){
+        [self saveOneToManyWithId:objectId inCoder:coder];
     }
     
-    if (completion) completion(wasInserted, objectId, error);
-    
+    if (completion) {
+        completion(wasInserted, objectId, error);
+    }
 }
 
 - (void) save:(id<DBCoding>) object withSchemeClass:(Class)objectClass completion:(DBSaveCompletion)completion{
-    [self save:object withSchemeClass:objectClass mode:(DBModeToMany | DBModeToOne) completion:completion];
+    [self save:object withSchemeClass:objectClass mode:DBModeAll completion:completion];
 }
 
 - (void) save:(id<DBCoding>) object completion:(DBSaveCompletion)completion{
-    [self save:object withSchemeClass:[object class] mode:(DBModeToMany | DBModeToOne) completion:completion];
+    [self save:object withSchemeClass:[object class] mode:DBModeAll completion:completion];
 }
 
 - (NSNumber *) insert:(DBCoder *) coder update:(BOOL) shouldUpdate error:(NSError **) error{
@@ -204,26 +231,22 @@
         
         BOOL success = NO;
         
-        if (query && args){
-            
+        if (query && args) {
             success = [self executeUpdate:query withArgumentsInArray:args];
             insertedId = [NSNumber numberWithLongLong:[self lastInsertRowId]];
-
         }
         
         if (error && !success){
             [self setupDBError:error action:@"inserting to db" query:query args:args];
         }
         
-
-        
     } replace:shouldUpdate];
         
     return insertedId;
 }
 
-- (void) update:(DBCoder *) coder error:(NSError **) error{
-    
+- (void) update:(DBCoder *) coder error:(NSError **) error
+{
     [coder updateStatement:^(NSString *query, NSArray *args) {
         BOOL success = NO;
         
@@ -235,10 +258,10 @@
             [self setupDBError:error action:@"updating db"];
         }
     }];
- 
 }
 
-- (void) setupDBError:(NSError **) error action:(NSString *) action{
+- (void) setupDBError:(NSError **) error action:(NSString *) action
+{
     NSError * dbError = [self lastError];
     if (dbError){
         * error = dbError;
@@ -247,7 +270,8 @@
     }
 }
 
-- (void) setupDBError:(NSError **) error action:(NSString *) action query:(NSString *) query args:(NSArray *) args{
+- (void) setupDBError:(NSError **) error action:(NSString *) action query:(NSString *) query args:(NSArray *) args
+{
     NSError * dbError = [self lastError];
     if (dbError){
         * error = dbError;
@@ -259,14 +283,15 @@
 
 #pragma mark - Access to DB
 
-- (BOOL) isExistCoder:(DBCoder *) coder{
-    
+- (BOOL)isExistCoder:(DBCoder *)coder
+{
     BOOL isExist = NO;
     
     if ([coder havePrimaryKey]){
         id existingObject = [self objectWithId:[coder primaryKey] andClass:[coder rootObjectClass]];
         isExist =  (existingObject != nil);
     }
+    
     return isExist;
 }
 
@@ -293,14 +318,18 @@
 - (id) objectOfClass:(Class) objectClass withSchemeClass:(Class) asClass fromDecoder:(DBCoder *) decoder{
   
     id<DBCoding> object = nil;
-    if (objectClass && decoder){
+    if (objectClass && decoder)
+    {
+        NSString * pkColumn = [asClass dbPKColumn];
+        id pkValue = [decoder decodeObjectForColumn:pkColumn];
+        
+        /* Set primary key for decoder */
+        [decoder setPrimaryKey:pkValue];
         
         /* Init with decoder */
         object = [NSInvocation resultOfInvokingTarget:[objectClass alloc] withSelector:@selector(initWithDBCoder:) ofClass:asClass arg:decoder];
         
-        /* Set primary key */
-        NSString * pkColumn = [asClass dbPKColumn];
-        id pkValue = [decoder decodeObjectForColumn:pkColumn];
+        /* Set primary key for initialized instance */
         [self setPrimaryKey:pkValue forObject:object asClass:asClass];
     }
     return object;
@@ -386,18 +415,29 @@
     return primaryKey;
 }
 
-- (void) delete:(DBCoder *) coder mode:(DBMode) mode error: (NSError **) error{
-    
-    //Remove arrays of objects which refers to current
-    if (mode & DBModeToMany){
-        [coder enumerateToManyRelationCoders:^(DBCoder *connection_coder) {
-            [connection_coder setPrimaryKey:[coder primaryKey]];
-            [self delete:connection_coder mode:mode error:error];
+- (void)delete:(DBCoder *)coder mode:(DBMode)mode error:(NSError **)error
+{
+    //Remove arrays of objects which refers to current via connection table
+    if (mode & DBModeManyToMany){
+        [coder enumerateManyToManyRelationCoders:^(DBCoder *connection_coder, DBTableConnection *connection) {
+            [connection_coder encodeObject:[coder primaryKey] forColumn:connection.encoderColumn];
+            [self delete:connection_coder mode:DBModeSingle error:error];
         }];
     }
+    
+    //Remove arrays of objects which refers to current
+    if (mode & DBModeOneToMany) {
+        [coder enumerateOneToManyRelatedObjects:^(id<DBCoding> object, NSString *foreignKey) {
+            DBCoder *foreignCoder = [[DBCoder alloc] initWithDBObject:object as:[object class]];
+            [foreignCoder setPrimaryKeyColumn:foreignKey];
+            [foreignCoder setPrimaryKey:[coder primaryKey]];
+            [self delete:foreignCoder mode:mode error:error];
+        }];
+    }
+    
     //Remove object that refers to current
-    if (mode & DBModeToOne){
-        [coder enumerateToOneRelatedObjects:^id(id<DBCoding> object, __unsafe_unretained Class objectClass) {
+    if (mode & DBModeOneToOne){
+        [coder enumerateOneToOneRelatedObjects:^id(id<DBCoding> object, __unsafe_unretained Class objectClass) {
             DBCoder * coder = [[DBCoder alloc] initWithDBObject:object as:objectClass];
             [self delete:coder mode:mode error:error];
             return nil;
@@ -419,25 +459,24 @@
     }
 }
 
-- (void) deleteObject:(id<DBCoding>)object withSchemeClass:(Class) objectClass mode:(DBMode)mode completion:(DBDeleteCompletion)completion{
-   
-    NSError * error = nil;
+- (void)deleteObject:(id<DBCoding>)object withSchemeClass:(Class)schemeClass mode:(DBMode)mode completion:(DBDeleteCompletion)completion
+{
+    NSError *error = nil;
     
-    if (object){
-        
-        DBCoder * coder = [[DBCoder alloc] initWithDBObject:object as:objectClass];
-        
-        if ([self isExistCoder:coder]){
+    if (object) {
+        DBCoder *coder = [[DBCoder alloc] initWithDBObject:object as:schemeClass];
+        if ([self isExistCoder:coder]) {
             [self delete:coder mode:mode error:&error];
-        }else{
+        } else {
             error = [NSError errorWithCode:DBErrorCodeObjectIsNotExist description:@"Object not exist. Nothing to delete."];
         }
-        
-    }else{
+    } else {
         error = [NSError errorWithCode:DBErrorCodeObjectIsNil description:@"Object to delete can't be nil"];
     }
     
-    if (completion) completion(error);
+    if (completion) {
+        completion(error);
+    }
 }
 
 - (void) deleteObject:(id<DBCoding>) object mode:(DBMode) mode completion:(DBDeleteCompletion) completion{

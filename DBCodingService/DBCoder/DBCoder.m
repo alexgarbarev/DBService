@@ -232,6 +232,11 @@
     pkColumnName = pkColumn;
 }
 
+- (void) setTable:(NSString *)_table
+{
+    table = _table;
+}
+
 - (BOOL) shouldSkipObject:(id)object{
     
     BOOL skipObject = NO;
@@ -371,10 +376,22 @@
     }
 }
 
+- (NSArray *)allOneToManyForeignKeys
+{
+    return [data allOneToManyForeignKeys];
+}
+
+- (void) enumerateOneToManyRelatedObjectsForKey:(NSString *)foreignKey withBlock:(void(^)(id<DBCoding>object))block
+{
+    if (block) {
+        [data enumerateOneToManyObjectsForKey:foreignKey usingBlock:block];
+    }
+}
+
 - (void)enumerateOneToManyRelatedObjects:(DBInsertingForeignBlock)block
 {
     if (block) {
-        [data enumerateOnToManyObjects:block];
+        [data enumerateOneToManyObjects:block];
     }
 }
 

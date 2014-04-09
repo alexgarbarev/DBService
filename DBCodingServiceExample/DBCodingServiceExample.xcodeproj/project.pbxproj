@@ -30,6 +30,8 @@
 		5B863A52169EC266004C6490 /* NSInvocation_Class.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A4E169EC266004C6490 /* NSInvocation_Class.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		FA8E6B4618F5BC9200A0F79F /* DBCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B4418F5BC9200A0F79F /* DBCoder.m */; };
 		FA8E6B4918F5BD2F00A0F79F /* DBCoderData.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B4818F5BD2F00A0F79F /* DBCoderData.m */; };
+		FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B4E18F5E07B00A0F79F /* Message.m */; };
+		FA8E6B5218F5E08600A0F79F /* Attachment.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B5118F5E08600A0F79F /* Attachment.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +81,10 @@
 		FA8E6B4518F5BC9200A0F79F /* DBCoder_DBService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCoder_DBService.h; sourceTree = "<group>"; };
 		FA8E6B4718F5BD2F00A0F79F /* DBCoderData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCoderData.h; sourceTree = "<group>"; };
 		FA8E6B4818F5BD2F00A0F79F /* DBCoderData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBCoderData.m; sourceTree = "<group>"; };
+		FA8E6B4D18F5E07B00A0F79F /* Message.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Message.h; sourceTree = "<group>"; };
+		FA8E6B4E18F5E07B00A0F79F /* Message.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Message.m; sourceTree = "<group>"; };
+		FA8E6B5018F5E08600A0F79F /* Attachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Attachment.h; sourceTree = "<group>"; };
+		FA8E6B5118F5E08600A0F79F /* Attachment.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Attachment.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,13 +113,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		5B7CE5861702C5A50089EF2C /* Model */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Model;
-			sourceTree = "<group>";
-		};
 		5B8639AA169EBE0B004C6490 = {
 			isa = PBXGroup;
 			children = (
@@ -151,7 +150,7 @@
 		5B8639BF169EBE0B004C6490 /* DBCodingServiceExample */ = {
 			isa = PBXGroup;
 			children = (
-				5B7CE5861702C5A50089EF2C /* Model */,
+				FA8E6B4C18F5E07000A0F79F /* Model */,
 				5B8639C8169EBE0B004C6490 /* AppDelegate.h */,
 				5B8639C9169EBE0B004C6490 /* AppDelegate.m */,
 				5B8639D1169EBE0B004C6490 /* ViewController.h */,
@@ -220,6 +219,17 @@
 				FA8E6B4518F5BC9200A0F79F /* DBCoder_DBService.h */,
 			);
 			path = DBCoder;
+			sourceTree = "<group>";
+		};
+		FA8E6B4C18F5E07000A0F79F /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				FA8E6B4D18F5E07B00A0F79F /* Message.h */,
+				FA8E6B4E18F5E07B00A0F79F /* Message.m */,
+				FA8E6B5018F5E08600A0F79F /* Attachment.h */,
+				FA8E6B5118F5E08600A0F79F /* Attachment.m */,
+			);
+			path = Model;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -367,9 +377,11 @@
 				FA8E6B4618F5BC9200A0F79F /* DBCoder.m in Sources */,
 				5B8639CA169EBE0B004C6490 /* AppDelegate.m in Sources */,
 				5B8639D3169EBE0B004C6490 /* ViewController.m in Sources */,
+				FA8E6B5218F5E08600A0F79F /* Attachment.m in Sources */,
 				5B863A50169EC266004C6490 /* DBCodingService.m in Sources */,
 				FA8E6B4918F5BD2F00A0F79F /* DBCoderData.m in Sources */,
 				5B863A51169EC266004C6490 /* DBTableConnection.m in Sources */,
+				FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */,
 				5B863A52169EC266004C6490 /* NSInvocation_Class.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -21,12 +21,15 @@ typedef void(^DBInsertingForeignBlock)(id<DBCoding> object, NSString *foreignKey
 - (void) setPrimaryKey:(id) pkValue;
 - (id) primaryKey;
 - (void) setPrimaryKeyColumn:(NSString *)pkColumn;
+- (void) setTable:(NSString *)table;
 
 
 - (void) enumerateOneToOneRelatedObjects:(DBInsertingBlock)block;
 
 - (void) enumerateManyToManyRelationCoders:(void(^)(DBCoder * connection_coder, DBTableConnection *connection))block;
 
+- (NSArray *)allOneToManyForeignKeys;
+- (void) enumerateOneToManyRelatedObjectsForKey:(NSString *)foreignKey withBlock:(void(^)(id<DBCoding>object))block;
 - (void) enumerateOneToManyRelatedObjects:(DBInsertingForeignBlock)block;
 
 /* Init for decoding */

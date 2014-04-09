@@ -117,13 +117,25 @@
     }
 }
 
-- (void)enumerateOnToManyObjects:(void(^)(id value, NSString *foreignKey))enumerationBlock
+- (NSArray *)allOneToManyForeignKeys
 {
-    for (NSString *key in [oneToManyValues allKeys]) {
-        NSArray *values = oneToManyValues[key];
-        for (id value in values) {
+    return [oneToManyValues allKeys];
+}
+
+- (void)enumerateOneToManyObjects:(void(^)(id value, NSString *foreignKey))enumerationBlock
+{
+    for (NSString *key in [self allOneToManyForeignKeys]) {
+        [self enumerateOneToManyObjectsForKey:key usingBlock:^(id value) {
             enumerationBlock(value, key);
-        }
+        }];
+    }
+}
+
+- (void)enumerateOneToManyObjectsForKey:(NSString *)foreigKey usingBlock:(void(^)(id value))enumerationBlock
+{
+    NSArray *values = oneToManyValues[foreigKey];
+    for (id value in values) {
+        enumerationBlock(value);
     }
 }
 

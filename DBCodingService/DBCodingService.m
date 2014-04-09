@@ -27,6 +27,19 @@
 
 @end
 
+static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments)
+{
+    NSMutableString *placeholder = [NSMutableString new];
+    for (int i = 0; i < numberOfArguments; i++) {
+        if (i < numberOfArguments - 1) {
+            [placeholder appendString:@"?, "];
+        } else {
+            [placeholder appendString:@"?"];
+        }
+    }
+    return placeholder;
+}
+
 @interface DBCodingService()
 
 
@@ -134,20 +147,35 @@
 //Saving one-to-many relations
 - (void)saveOneToManyWithId:(id)objectId inCoder:(DBCoder *)coder
 {
-    [coder enumerateOneToManyRelatedObjects:^(id<DBCoding> object, NSString *foreignKey)
-    {
-        DBCoder *coder = [[DBCoder alloc] initWithDBObject:object as:[object class]];
-        [coder encodeObject:objectId forColumn:foreignKey];
+    NSMutableArray *currentIds = [NSMutableArray new];
+    __block Class objectsClass = nil;
     
-        [self saveCoder:coder mode:DBModeAll completion:^(BOOL wasInserted, id objectId, NSError *error) {
-            if (wasInserted) {
-                [self setPrimaryKey:objectId forObject:object asClass:[object class]];
-            }
-            if (error){
-                NSLog(@"%@",[error localizedDescription]);
-            }
+    NSArray *allKeys = [coder allOneToManyForeignKeys];
+    
+    for (NSString *foreignKey in allKeys)
+    {
+        [coder enumerateOneToManyRelatedObjectsForKey:foreignKey withBlock:^(id<DBCoding> object) {
+            objectsClass = [object class];
+            DBCoder *coder = [[DBCoder alloc] initWithDBObject:object as:[object class]];
+            [coder encodeObject:objectId forColumn:foreignKey];
+            
+            [self saveCoder:coder mode:DBModeAll completion:^(BOOL wasInserted, id objectId, NSError *error) {
+                if (wasInserted) {
+                    [self setPrimaryKey:objectId forObject:object asClass:[object class]];
+                }
+                if (error){
+                    NSLog(@"%@",[error localizedDescription]);
+                }
+                [currentIds addObject:objectId];
+            }];
         }];
-    }];
+        if (objectsClass) {
+            NSString *idsPlaceholder = StringWithSqliteArgumentPlaceholder([currentIds count]);
+            [self deleteObjectsOfClass:objectsClass where:[NSString stringWithFormat:@"%@ NOT IN (%@)",[objectsClass dbPKColumn], idsPlaceholder] args:currentIds];
+        }
+        [currentIds removeAllObjects];
+        objectsClass = nil;
+    }
 }
 
 //Saving handle many-to-many relations
@@ -479,8 +507,23 @@
     }
 }
 
-- (void) deleteObject:(id<DBCoding>) object mode:(DBMode) mode completion:(DBDeleteCompletion) completion{
+- (void)deleteObject:(id<DBCoding>) object mode:(DBMode) mode completion:(DBDeleteCompletion) completion
+{
     [self deleteObject:object withSchemeClass:[object class] mode:mode completion:completion];
+}
+
+- (void)deleteObjectsOfClass:(Class<DBCoding>)objectClass where:(NSString *)whereQuery args:(NSArray *)args
+{
+    NSString *selectQuery = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@",[objectClass dbTable], whereQuery];
+    NSArray *decoders = [self decodersFromSQLQuery:selectQuery withArgs:args];
+    for (DBCoder *decoder in decoders) {
+        NSError *error = nil;
+        [decoder setTable:[objectClass dbTable]];
+        [decoder setPrimaryKeyColumn:[objectClass dbPKColumn]];
+        [decoder setPrimaryKey:[decoder decodeObjectForColumn:[objectClass dbPKColumn]]];
+        
+        [self delete:decoder mode:DBModeAll error:&error];
+    }
 }
 
 @end

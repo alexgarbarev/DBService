@@ -10,6 +10,9 @@
 #import "DBCoder_DBService.h"
 #import "NSInvocation_Class.h"
 
+#import "FMDatabase.h"
+#import "FMDatabaseQueue.h"
+
 @interface NSError(NSError_Shortcuts)
 
 + (NSError *) errorWithCode:(NSInteger) code description:(NSString *) description;
@@ -29,21 +32,76 @@
 
 @end
 
-@implementation DBCodingService
-@synthesize database;
+@implementation DBCodingService {
+    FMDatabase *database;
+    FMDatabaseQueue *queue;
+}
 
-- (id) initWithDatabase:(FMDatabase *) _database{
+- (id) initWithDatabase:(FMDatabase *) _database
+{
     self = [super init];
     if (self) {
-        self.database = _database;
+        database = _database;
     }
     return self;
 }
 
-- (FMDatabase *)database{
-    if (!database)
-        NSLog(@"Database is not set. Init with 'initWithDatabase'.");
-    return database;
+- (id)initWithDatabaseQueue:(FMDatabaseQueue *)_queue
+{
+    self = [super init];
+    if (self) {
+        queue = _queue;
+    }
+    return self;
+}
+
+#pragma mark - Working with FMDB
+
+- (void)performBlock:(void(^)(FMDatabase *db))block
+{
+    if (queue) {
+        [queue inDatabase:block];
+    } else if (database) {
+        block(database);
+    } else {
+        NSLog(@"Database is not set. Init with 'initWithQueue' or 'initWithDatabase'.");
+    }
+}
+
+- (BOOL)executeUpdate:(NSString *)query withArgumentsInArray:(NSArray *)args
+{
+    __block BOOL success;
+    [self performBlock:^(FMDatabase *db) {
+        success = [db executeUpdate:query withArgumentsInArray:args];
+    }];
+    return success;
+}
+
+- (FMResultSet *)executeQuery:(NSString *)query withArgumentsInArray:(NSArray *)args
+{
+    __block FMResultSet *result;
+    [self performBlock:^(FMDatabase *db) {
+        result = [db executeQuery:query withArgumentsInArray:args];
+    }];
+    return result;
+}
+
+- (NSError *)lastError
+{
+    __block NSError *error;
+    [self performBlock:^(FMDatabase *db) {
+        error = [db lastError];
+    }];
+    return error;
+}
+
+- (sqlite_int64)lastInsertRowId
+{
+    __block sqlite_int64 lastRowId;
+    [self performBlock:^(FMDatabase *db) {
+        lastRowId = [db lastInsertRowId];
+    }];
+    return lastRowId;
 }
 
 #pragma mark - Changing DB
@@ -148,8 +206,8 @@
         
         if (query && args){
             
-            success = [self.database executeUpdate:query withArgumentsInArray:args];
-            insertedId = [NSNumber numberWithLongLong:[self.database lastInsertRowId]];
+            success = [self executeUpdate:query withArgumentsInArray:args];
+            insertedId = [NSNumber numberWithLongLong:[self lastInsertRowId]];
 
         }
         
@@ -170,7 +228,7 @@
         BOOL success = NO;
         
         if (query && args){
-            success = [self.database executeUpdate:query withArgumentsInArray:args];
+            success = [self executeUpdate:query withArgumentsInArray:args];
         }
         
         if (error && !success){
@@ -181,7 +239,7 @@
 }
 
 - (void) setupDBError:(NSError **) error action:(NSString *) action{
-    NSError * dbError = [self.database lastError];
+    NSError * dbError = [self lastError];
     if (dbError){
         * error = dbError;
     }else{
@@ -190,7 +248,7 @@
 }
 
 - (void) setupDBError:(NSError **) error action:(NSString *) action query:(NSString *) query args:(NSArray *) args{
-    NSError * dbError = [self.database lastError];
+    NSError * dbError = [self lastError];
     if (dbError){
         * error = dbError;
     }else{
@@ -301,7 +359,7 @@
     
     NSMutableArray * resultArray = [[NSMutableArray alloc] init];
    
-    FMResultSet * resultSet = [self.database executeQuery:query withArgumentsInArray:args];
+    FMResultSet * resultSet = [self executeQuery:query withArgumentsInArray:args];
     
     while ([resultSet next]) {
         DBCoder * decoder = [[DBCoder alloc] initWithResultSet:resultSet dbService:self];
@@ -351,7 +409,7 @@
             BOOL success = NO;
             
             if (query && args){
-                success = [self.database executeUpdate:query withArgumentsInArray:args];
+                success = [self executeUpdate:query withArgumentsInArray:args];
             }
             
             if (error && !success){

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		577B278AC5594B0394594A2E /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D85D4DD77AA477A83449E27 /* libPods.a */; };
 		5B8639BA169EBE0B004C6490 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B8639B9169EBE0B004C6490 /* UIKit.framework */; };
 		5B8639BC169EBE0B004C6490 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B8639BB169EBE0B004C6490 /* Foundation.framework */; };
 		5B8639BE169EBE0B004C6490 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B8639BD169EBE0B004C6490 /* CoreGraphics.framework */; };
@@ -24,11 +25,6 @@
 		5B8639E8169EBE0C004C6490 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5B8639E6169EBE0C004C6490 /* InfoPlist.strings */; };
 		5B8639EB169EBE0C004C6490 /* DBCodingServiceExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B8639EA169EBE0C004C6490 /* DBCodingServiceExampleTests.m */; };
 		5B863A13169EBFB7004C6490 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B863A12169EBFB7004C6490 /* libsqlite3.dylib */; };
-		5B863A3F169EC261004C6490 /* FMDatabase.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A35169EC261004C6490 /* FMDatabase.m */; };
-		5B863A40169EC261004C6490 /* FMDatabaseAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A37169EC261004C6490 /* FMDatabaseAdditions.m */; };
-		5B863A41169EC261004C6490 /* FMDatabasePool.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A39169EC261004C6490 /* FMDatabasePool.m */; };
-		5B863A42169EC261004C6490 /* FMDatabaseQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A3B169EC261004C6490 /* FMDatabaseQueue.m */; };
-		5B863A44169EC261004C6490 /* FMResultSet.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A3E169EC261004C6490 /* FMResultSet.m */; };
 		5B863A4F169EC266004C6490 /* DBCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A47169EC266004C6490 /* DBCoder.m */; };
 		5B863A50169EC266004C6490 /* DBCodingService.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A4A169EC266004C6490 /* DBCodingService.m */; };
 		5B863A51169EC266004C6490 /* DBTableConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A4C169EC266004C6490 /* DBTableConnection.m */; };
@@ -69,16 +65,6 @@
 		5B8639E9169EBE0C004C6490 /* DBCodingServiceExampleTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBCodingServiceExampleTests.h; sourceTree = "<group>"; };
 		5B8639EA169EBE0C004C6490 /* DBCodingServiceExampleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DBCodingServiceExampleTests.m; sourceTree = "<group>"; };
 		5B863A12169EBFB7004C6490 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
-		5B863A34169EC261004C6490 /* FMDatabase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMDatabase.h; sourceTree = "<group>"; };
-		5B863A35169EC261004C6490 /* FMDatabase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMDatabase.m; sourceTree = "<group>"; };
-		5B863A36169EC261004C6490 /* FMDatabaseAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMDatabaseAdditions.h; sourceTree = "<group>"; };
-		5B863A37169EC261004C6490 /* FMDatabaseAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMDatabaseAdditions.m; sourceTree = "<group>"; };
-		5B863A38169EC261004C6490 /* FMDatabasePool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMDatabasePool.h; sourceTree = "<group>"; };
-		5B863A39169EC261004C6490 /* FMDatabasePool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMDatabasePool.m; sourceTree = "<group>"; };
-		5B863A3A169EC261004C6490 /* FMDatabaseQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMDatabaseQueue.h; sourceTree = "<group>"; };
-		5B863A3B169EC261004C6490 /* FMDatabaseQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMDatabaseQueue.m; sourceTree = "<group>"; };
-		5B863A3D169EC261004C6490 /* FMResultSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FMResultSet.h; sourceTree = "<group>"; };
-		5B863A3E169EC261004C6490 /* FMResultSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FMResultSet.m; sourceTree = "<group>"; };
 		5B863A46169EC266004C6490 /* DBCoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCoder.h; sourceTree = "<group>"; };
 		5B863A47169EC266004C6490 /* DBCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBCoder.m; sourceTree = "<group>"; };
 		5B863A48169EC266004C6490 /* DBCoder_DBService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCoder_DBService.h; sourceTree = "<group>"; };
@@ -88,6 +74,8 @@
 		5B863A4C169EC266004C6490 /* DBTableConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBTableConnection.m; sourceTree = "<group>"; };
 		5B863A4D169EC266004C6490 /* NSInvocation_Class.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSInvocation_Class.h; sourceTree = "<group>"; };
 		5B863A4E169EC266004C6490 /* NSInvocation_Class.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSInvocation_Class.m; sourceTree = "<group>"; };
+		7E4B7DBD7FC940728B5F2972 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		9D85D4DD77AA477A83449E27 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +87,7 @@
 				5B8639BA169EBE0B004C6490 /* UIKit.framework in Frameworks */,
 				5B8639BC169EBE0B004C6490 /* Foundation.framework in Frameworks */,
 				5B8639BE169EBE0B004C6490 /* CoreGraphics.framework in Frameworks */,
+				577B278AC5594B0394594A2E /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -115,16 +104,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5B7CE5861702C5A50089EF2C /* Model */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
 		5B8639AA169EBE0B004C6490 = {
 			isa = PBXGroup;
 			children = (
-				5B863A12169EBFB7004C6490 /* libsqlite3.dylib */,
-				5B863A33169EC261004C6490 /* FMDB */,
 				5B863A45169EC266004C6490 /* DBCodingService */,
 				5B8639BF169EBE0B004C6490 /* DBCodingServiceExample */,
 				5B8639E3169EBE0C004C6490 /* DBCodingServiceExampleTests */,
 				5B8639B8169EBE0B004C6490 /* Frameworks */,
 				5B8639B6169EBE0B004C6490 /* Products */,
+				7E4B7DBD7FC940728B5F2972 /* Pods.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -140,10 +135,12 @@
 		5B8639B8169EBE0B004C6490 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				5B863A12169EBFB7004C6490 /* libsqlite3.dylib */,
 				5B8639B9169EBE0B004C6490 /* UIKit.framework */,
 				5B8639BB169EBE0B004C6490 /* Foundation.framework */,
 				5B8639BD169EBE0B004C6490 /* CoreGraphics.framework */,
 				5B8639DD169EBE0C004C6490 /* SenTestingKit.framework */,
+				9D85D4DD77AA477A83449E27 /* libPods.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -151,6 +148,7 @@
 		5B8639BF169EBE0B004C6490 /* DBCodingServiceExample */ = {
 			isa = PBXGroup;
 			children = (
+				5B7CE5861702C5A50089EF2C /* Model */,
 				5B8639C8169EBE0B004C6490 /* AppDelegate.h */,
 				5B8639C9169EBE0B004C6490 /* AppDelegate.m */,
 				5B8639D1169EBE0B004C6490 /* ViewController.h */,
@@ -194,24 +192,6 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		5B863A33169EC261004C6490 /* FMDB */ = {
-			isa = PBXGroup;
-			children = (
-				5B863A34169EC261004C6490 /* FMDatabase.h */,
-				5B863A35169EC261004C6490 /* FMDatabase.m */,
-				5B863A36169EC261004C6490 /* FMDatabaseAdditions.h */,
-				5B863A37169EC261004C6490 /* FMDatabaseAdditions.m */,
-				5B863A38169EC261004C6490 /* FMDatabasePool.h */,
-				5B863A39169EC261004C6490 /* FMDatabasePool.m */,
-				5B863A3A169EC261004C6490 /* FMDatabaseQueue.h */,
-				5B863A3B169EC261004C6490 /* FMDatabaseQueue.m */,
-				5B863A3D169EC261004C6490 /* FMResultSet.h */,
-				5B863A3E169EC261004C6490 /* FMResultSet.m */,
-			);
-			name = FMDB;
-			path = ../FMDB;
-			sourceTree = "<group>";
-		};
 		5B863A45169EC266004C6490 /* DBCodingService */ = {
 			isa = PBXGroup;
 			children = (
@@ -236,9 +216,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5B8639EE169EBE0C004C6490 /* Build configuration list for PBXNativeTarget "DBCodingServiceExample" */;
 			buildPhases = (
+				DF44FC61DB844F92974FA1F4 /* Check Pods Manifest.lock */,
 				5B8639B1169EBE0B004C6490 /* Sources */,
 				5B8639B2169EBE0B004C6490 /* Frameworks */,
 				5B8639B3169EBE0B004C6490 /* Resources */,
+				90308C2A9D4A4DE6AFC81A0A /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -331,6 +313,36 @@
 			shellPath = /bin/sh;
 			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
 		};
+		90308C2A9D4A4DE6AFC81A0A /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DF44FC61DB844F92974FA1F4 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -341,11 +353,6 @@
 				5B8639C6169EBE0B004C6490 /* main.m in Sources */,
 				5B8639CA169EBE0B004C6490 /* AppDelegate.m in Sources */,
 				5B8639D3169EBE0B004C6490 /* ViewController.m in Sources */,
-				5B863A3F169EC261004C6490 /* FMDatabase.m in Sources */,
-				5B863A40169EC261004C6490 /* FMDatabaseAdditions.m in Sources */,
-				5B863A41169EC261004C6490 /* FMDatabasePool.m in Sources */,
-				5B863A42169EC261004C6490 /* FMDatabaseQueue.m in Sources */,
-				5B863A44169EC261004C6490 /* FMResultSet.m in Sources */,
 				5B863A4F169EC266004C6490 /* DBCoder.m in Sources */,
 				5B863A50169EC266004C6490 /* DBCodingService.m in Sources */,
 				5B863A51169EC266004C6490 /* DBTableConnection.m in Sources */,
@@ -451,6 +458,7 @@
 		};
 		5B8639EF169EBE0C004C6490 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7E4B7DBD7FC940728B5F2972 /* Pods.xcconfig */;
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DBCodingServiceExample/DBCodingServiceExample-Prefix.pch";
@@ -463,6 +471,7 @@
 		};
 		5B8639F0169EBE0C004C6490 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7E4B7DBD7FC940728B5F2972 /* Pods.xcconfig */;
 			buildSettings = {
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "DBCodingServiceExample/DBCodingServiceExample-Prefix.pch";

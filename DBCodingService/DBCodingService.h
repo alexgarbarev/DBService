@@ -8,7 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-#import "FMDatabase.h"
+@class FMDatabase;
+@class FMDatabaseQueue;
+
 #import "DBCoder.h"
 
 typedef void(^DBSaveCompletion)(BOOL wasInserted, id objectId, NSError * error);
@@ -25,9 +27,9 @@ typedef enum { DBErrorCodeObjectIsNil = 100, DBErrorCodeObjectIsNotExist, DBErro
  * Service works only with objects which confirms DBCoding protocol. */
 @interface DBCodingService : NSObject
 
-@property  (nonatomic, strong) FMDatabase * database;
+- (id)initWithDatabase:(FMDatabase *)database;
 
-- (id) initWithDatabase:(FMDatabase *) database;
+- (id)initWithDatabaseQueue:(FMDatabaseQueue *)queue;
 
 /* 
  *   'as: (Class)' - Used to save one object as another object.

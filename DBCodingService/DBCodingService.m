@@ -22,7 +22,7 @@
 @implementation NSError (NSError_Shortcuts)
 
 + (NSError *) errorWithCode:(NSInteger) code description:(NSString *) description{
-    return [NSError errorWithDomain:@"com.qliq" code:code userInfo: @{ NSLocalizedDescriptionKey : description} ];
+    return [NSError errorWithDomain:@"com.dbcodingservice" code:code userInfo: @{ NSLocalizedDescriptionKey : description} ];
 }
 
 @end
@@ -118,7 +118,7 @@
     [coder enumerateToOneRelatedObjects:^id(id<DBCoding> object, Class objectClass) {
         __block id insertedId = nil;
         
-        [self save:object as:objectClass completion:^(BOOL wasInserted, id objectId, NSError *error) {
+        [self save:object withSchemeClass:objectClass completion:^(BOOL wasInserted, id objectId, NSError *error) {
             insertedId = objectId;
             if (error){
                 NSLog(@"%@",[error localizedDescription]);
@@ -144,7 +144,7 @@
     
 }
 
-- (void) save:(id<DBCoding>) object as:(Class)objectClass mode:(DBMode) mode completion:(DBSaveCompletion)completion{
+- (void) save:(id<DBCoding>) object withSchemeClass:(Class)objectClass mode:(DBMode) mode completion:(DBSaveCompletion)completion{
     
     if (!object){
         NSError * error = [NSError errorWithCode:DBErrorCodeObjectIsNil description:@"Object to save can't be nil"];
@@ -188,12 +188,12 @@
     
 }
 
-- (void) save:(id<DBCoding>) object as:(Class)objectClass completion:(DBSaveCompletion)completion{
-    [self save:object as:objectClass mode:(DBModeToMany | DBModeToOne) completion:completion];
+- (void) save:(id<DBCoding>) object withSchemeClass:(Class)objectClass completion:(DBSaveCompletion)completion{
+    [self save:object withSchemeClass:objectClass mode:(DBModeToMany | DBModeToOne) completion:completion];
 }
 
 - (void) save:(id<DBCoding>) object completion:(DBSaveCompletion)completion{
-    [self save:object as:[object class] mode:(DBModeToMany | DBModeToOne) completion:completion];
+    [self save:object withSchemeClass:[object class] mode:(DBModeToMany | DBModeToOne) completion:completion];
 }
 
 - (NSNumber *) insert:(DBCoder *) coder update:(BOOL) shouldUpdate error:(NSError **) error{
@@ -290,7 +290,7 @@
     [(NSObject *)object setValue:key forKey:pkProperty];
 }
 
-- (id) objectOfClass:(Class) objectClass asClass:(Class) asClass fromDecoder:(DBCoder *) decoder{
+- (id) objectOfClass:(Class) objectClass withSchemeClass:(Class) asClass fromDecoder:(DBCoder *) decoder{
   
     id<DBCoding> object = nil;
     if (objectClass && decoder){
@@ -307,10 +307,10 @@
 }
 
 - (id) objectOfClass:(Class) objectClass fromDecoder:(DBCoder *) decoder{    
-    return [self objectOfClass:objectClass asClass:objectClass fromDecoder:decoder];
+    return [self objectOfClass:objectClass withSchemeClass:objectClass fromDecoder:decoder];
 }
 
-- (id) objectWithId:(id) identifier andClass:(Class) objectClass asClass:(Class) asClass{
+- (id)objectWithId:(id)identifier andClass:(Class)objectClass withSchemeClass:(Class)asClass{
     
     if (!identifier) {
         NSLog(@"You are trying to fetch object of %@ class with nil id.",objectClass);
@@ -327,14 +327,14 @@
     id <DBCoding> object = nil;
     
     if ([decoders count] > 0){
-        object = [self objectOfClass:objectClass asClass:asClass fromDecoder:decoders[0]];
+        object = [self objectOfClass:objectClass withSchemeClass:asClass fromDecoder:decoders[0]];
     }
     
     return object;
 }
 
 - (id) objectWithId:(id) identifier andClass:(Class) objectClass{
-    return [self objectWithId:identifier andClass:objectClass asClass:objectClass];
+    return [self objectWithId:identifier andClass:objectClass withSchemeClass:objectClass];
 }
 
 - (id) reloadObject:(id<DBCoding>) object{
@@ -419,7 +419,7 @@
     }
 }
 
-- (void) deleteObject:(id<DBCoding>)object as:(Class) objectClass mode:(DBMode)mode completion:(DBDeleteCompletion)completion{
+- (void) deleteObject:(id<DBCoding>)object withSchemeClass:(Class) objectClass mode:(DBMode)mode completion:(DBDeleteCompletion)completion{
    
     NSError * error = nil;
     
@@ -441,7 +441,7 @@
 }
 
 - (void) deleteObject:(id<DBCoding>) object mode:(DBMode) mode completion:(DBDeleteCompletion) completion{
-    [self deleteObject:object as:[object class] mode:mode completion:completion];
+    [self deleteObject:object withSchemeClass:[object class] mode:mode completion:completion];
 }
 
 @end

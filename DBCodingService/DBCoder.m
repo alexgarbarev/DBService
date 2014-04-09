@@ -33,17 +33,17 @@
     //Service, used to decoding:
     DBCodingService * dbService;
     
-    BOOL skipZeroValues;
+    BOOL shouldSkipZeroValues;
 }
 
-@dynamic skipZeroValues;
+@dynamic shouldSkipZeroValues;
 
-- (void) setSkipZeroValues:(BOOL) _skipEmptyString{
-    skipZeroValues = _skipEmptyString;
+- (void) setShouldSkipZeroValues:(BOOL) _skipEmptyString{
+    shouldSkipZeroValues = _skipEmptyString;
 }
 
-- (BOOL)skipZeroValues{
-    return skipZeroValues;
+- (BOOL)shouldSkipZeroValues{
+    return shouldSkipZeroValues;
 }
 
 - (NSString *)description{
@@ -73,7 +73,7 @@
     }
 }
 
-- (void) encodeObject:(id) object ofClass:(Class)objectClass forColumn:(NSString *)column{
+- (void) encodeObject:(id) object withSchemeClass:(Class)objectClass forColumn:(NSString *)column{
     [self encodeObject:object forColumn:column];
     classesForColumns[column] = NSStringFromClass(objectClass);
 }
@@ -95,13 +95,13 @@
     }];
 }
 
-- (id<DBCoding>) decodeDBObjectOfClass:(Class) objectClass asClass:(Class) asClass forColumn:(NSString *) column{
+- (id<DBCoding>) decodeDBObjectOfClass:(Class) objectClass withSchemeClass:(Class) asClass forColumn:(NSString *) column{
     id objectId = [self decodeObjectForColumn:column];
-    return [dbService objectWithId:objectId andClass:objectClass asClass:asClass];
+    return [dbService objectWithId:objectId andClass:objectClass withSchemeClass:asClass];
 }
 
 - (id<DBCoding>) decodeDBObjectOfClass:(Class)objectClass forColumn:(NSString *)column{
-    return [self decodeDBObjectOfClass:objectClass asClass:objectClass forColumn:column];
+    return [self decodeDBObjectOfClass:objectClass withSchemeClass:objectClass forColumn:column];
 }
 
 @end
@@ -116,7 +116,7 @@
     if (self) {
         pkColumnName = [connection onColumn];
         table = [connection table];
-        skipZeroValues = YES;
+        shouldSkipZeroValues = YES;
     }
     return self;
 }
@@ -125,7 +125,7 @@
     self = [super init];
     if (self) {
         dbService = service;
-        skipZeroValues = YES;
+        shouldSkipZeroValues = YES;
         valuesForColums = [NSMutableDictionary new];
 
         for (int i = 0; i < [resultSet columnCount]; i++){
@@ -145,7 +145,7 @@
     self = [super init];
     if (self) {
         
-        skipZeroValues = YES;
+        shouldSkipZeroValues = YES;
         pkColumnName = [objectClass dbPKColumn];
         table = [objectClass dbTable];
 
@@ -213,7 +213,7 @@
     
     BOOL skipObject = NO;
     
-    if (skipZeroValues){
+    if (shouldSkipZeroValues){
         if ([object isKindOfClass:[NSString class]] && [object length] == 0)
             skipObject = YES;
         

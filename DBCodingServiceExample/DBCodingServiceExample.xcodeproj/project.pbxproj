@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		577B278AC5594B0394594A2E /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9D85D4DD77AA477A83449E27 /* libPods.a */; };
+		5B2BED6A18F6905000A089CA /* File.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B2BED6918F6905000A089CA /* File.m */; };
 		5B8639BA169EBE0B004C6490 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B8639B9169EBE0B004C6490 /* UIKit.framework */; };
 		5B8639BC169EBE0B004C6490 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B8639BB169EBE0B004C6490 /* Foundation.framework */; };
 		5B8639BE169EBE0B004C6490 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B8639BD169EBE0B004C6490 /* CoreGraphics.framework */; };
@@ -45,6 +46,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		5B2BED6818F6905000A089CA /* File.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = File.h; sourceTree = "<group>"; };
+		5B2BED6918F6905000A089CA /* File.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = File.m; sourceTree = "<group>"; };
 		5B8639B5169EBE0B004C6490 /* DBCodingServiceExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DBCodingServiceExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5B8639B9169EBE0B004C6490 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		5B8639BB169EBE0B004C6490 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -228,6 +231,8 @@
 				FA8E6B4E18F5E07B00A0F79F /* Message.m */,
 				FA8E6B5018F5E08600A0F79F /* Attachment.h */,
 				FA8E6B5118F5E08600A0F79F /* Attachment.m */,
+				5B2BED6818F6905000A089CA /* File.h */,
+				5B2BED6918F6905000A089CA /* File.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -382,6 +387,7 @@
 				FA8E6B4918F5BD2F00A0F79F /* DBCoderData.m in Sources */,
 				5B863A51169EC266004C6490 /* DBTableConnection.m in Sources */,
 				FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */,
+				5B2BED6A18F6905000A089CA /* File.m in Sources */,
 				5B863A52169EC266004C6490 /* NSInvocation_Class.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

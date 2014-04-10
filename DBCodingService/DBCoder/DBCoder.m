@@ -85,11 +85,9 @@
     return [data valueForColumn:column];
 }
 
-- (void)decodeObjectsFromConnection:(DBTableConnection *)connection decoding:(DBDecodingBlock) codingBlock
+- (void)decodeObjectsFromConnection:(DBTableConnection *)connection decoding:(DBDecodingBlock)codingBlock
 {
     NSString * query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ?", connection.table, connection.encoderColumn];
-    
-    pkColumnValue = [self decodeObjectForColumn:connection.encodedObjectColumn];
     
     NSArray * decoders = [decodingService decodersFromSQLQuery:query withArgs:@[pkColumnValue]];
     
@@ -150,7 +148,7 @@
         pkColumnName = [connection encoderColumn];
         table = [connection table];
         shouldSkipZeroValues = YES;
-        data = [[DBCoderData alloc] initWithEncodingIgnoredColumns:@[pkColumnName]];
+        data = [[DBCoderData alloc] init];
     }
     return self;
 }
@@ -376,6 +374,25 @@
     }
 }
 
+- (NSArray *)allManyToManyConnections
+{
+    return [data allManyToManyConnections];
+}
+
+- (void)enumerateManyToManyCodersForConnection:(DBTableConnection *)connection usingBlock:(void(^)(DBCoder *connectionCoder))block
+{
+    if (block) {
+        [data enumerateManyToManyCodersForConnection:connection usingBlock:block];
+    }
+}
+
+- (void) enumerateManyToManyRelationCoders:(void(^)(DBCoder * connection_coder, DBTableConnection *connection))block
+{
+    if (block) {
+        [data enumerateManyToManyCoders:block];
+    }
+}
+
 - (NSArray *)allOneToManyForeignKeys
 {
     return [data allOneToManyForeignKeys];
@@ -392,13 +409,6 @@
 {
     if (block) {
         [data enumerateOneToManyObjects:block];
-    }
-}
-
-- (void) enumerateManyToManyRelationCoders:(void(^)(DBCoder * connection_coder, DBTableConnection *connection))block
-{
-    if (block) {
-        [data enumerateManyToManyCoders:block];
     }
 }
 

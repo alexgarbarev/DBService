@@ -12,6 +12,7 @@
 @interface Message : NSObject <DBCoding>
 
 @property (nonatomic) NSInteger messageId;
+
 @property (nonatomic, strong) NSString *text;
 @property (nonatomic, strong) NSArray *attachments;
 

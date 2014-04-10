@@ -147,7 +147,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
 //Saving one-to-many relations
 - (void)saveOneToManyWithId:(id)objectId inCoder:(DBCoder *)coder
 {
-    NSMutableArray *currentIds = [NSMutableArray new];
+    NSMutableArray *savedIdentifiers = [NSMutableArray new];
     __block Class objectsClass = nil;
     
     NSArray *allKeys = [coder allOneToManyForeignKeys];
@@ -166,25 +166,33 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
                 if (error){
                     NSLog(@"%@",[error localizedDescription]);
                 }
-                [currentIds addObject:objectId];
+                [savedIdentifiers addObject:objectId];
             }];
         }];
         if (objectsClass) {
-            NSString *idsPlaceholder = StringWithSqliteArgumentPlaceholder([currentIds count]);
-            [self deleteObjectsOfClass:objectsClass where:[NSString stringWithFormat:@"%@ NOT IN (%@)",[objectsClass dbPKColumn], idsPlaceholder] args:currentIds];
+            NSString *idsPlaceholder = StringWithSqliteArgumentPlaceholder([savedIdentifiers count]);
+            [self deleteObjectsOfClass:objectsClass where:[NSString stringWithFormat:@"%@ NOT IN (%@)",[objectsClass dbPKColumn], idsPlaceholder] args:savedIdentifiers];
         }
-        [currentIds removeAllObjects];
+        [savedIdentifiers removeAllObjects];
         objectsClass = nil;
     }
 }
 
 //Saving handle many-to-many relations
-- (void)saveManyToManyWithId:(id)objectId inCoder:(DBCoder *)coder
+- (void)saveManyToManyWithId:(id)encoderId inCoder:(DBCoder *)coder
 {
-    [coder enumerateManyToManyRelationCoders:^(DBCoder *connection_coder, DBTableConnection *connection) {
-        [connection_coder encodeObject:objectId forColumn:connection.encoderColumn];
-        [self saveCoder:connection_coder mode:DBModeAll completion:nil];
-    }];
+    NSArray *connections = [coder allManyToManyConnections];
+    
+    for (DBTableConnection *connection in connections)
+    {
+        NSString *query = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ = ?", connection.table, connection.encoderColumn];
+        [self executeUpdate:query withArgumentsInArray:@[encoderId]];
+
+        [coder enumerateManyToManyCodersForConnection:connection usingBlock:^(DBCoder *connectionCoder) {
+            [connectionCoder encodeObject:encoderId forColumn:connection.encoderColumn];
+            [self saveCoder:connectionCoder mode:DBModeAll completion:nil];
+        }];
+    }
 }
 
 - (void)save:(id<DBCoding>) object withSchemeClass:(Class)objectClass mode:(DBMode) mode completion:(DBSaveCompletion)completion
@@ -464,7 +472,8 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     //Remove arrays of objects which refers to current via connection table
     if (mode & DBModeManyToMany){
         [coder enumerateManyToManyRelationCoders:^(DBCoder *connection_coder, DBTableConnection *connection) {
-            [connection_coder encodeObject:[coder primaryKey] forColumn:connection.encoderColumn];
+            [connection_coder setPrimaryKey:[coder primaryKey]];
+            [connection_coder setPrimaryKeyColumn:connection.encoderColumn];
             [self delete:connection_coder mode:DBModeSingle error:error];
         }];
     }

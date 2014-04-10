@@ -13,7 +13,9 @@
 
 - (void)encodeWithDBCoder:(DBCoder *)coder
 {
+    /* Encoding object */
     [coder encodeObject:self.text forColumn:@"text"];
+    /* Encoding One-To-Many relations*/
     [coder encodeObjects:self.attachments withForeignKeyColumn:@"messageId"];
 }
 

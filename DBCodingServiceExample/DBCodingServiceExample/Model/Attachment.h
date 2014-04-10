@@ -12,7 +12,9 @@
 @interface Attachment : NSObject <DBCoding>
 
 @property (nonatomic) NSUInteger attachmentId;
+
 @property (nonatomic) NSUInteger messageId;
-@property (nonatomic, strong) NSString *filePath;
+@property (nonatomic, strong) NSString *comment;
+@property (nonatomic, strong) NSArray *files;
 
 @end

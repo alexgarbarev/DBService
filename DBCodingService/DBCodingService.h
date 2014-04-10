@@ -89,7 +89,7 @@ typedef enum { DBErrorCodeObjectIsNil = 100, DBErrorCodeObjectIsNotExist, DBErro
 - (id)reloadObject:(id<DBCoding>)object;
 
 /** it returns latest primary key. Useful for autoincrement PKs to know which PK will be insterted */
-- (id)latestPrimaryKeyForClass:(Class) objectClass;
+- (id)latestPrimaryKeyForClass:(Class)objectClass;
 
 
 @end

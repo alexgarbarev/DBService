@@ -107,13 +107,25 @@
     manyToManyCoders[connection] = coders;
 }
 
+- (NSArray *)allManyToManyConnections
+{
+    return [manyToManyCoders allKeys];
+}
+
+- (void)enumerateManyToManyCodersForConnection:(DBTableConnection *)connection usingBlock:(void(^)(DBCoder *connectionCoder))block
+{
+    NSArray *array = manyToManyCoders[connection];
+    for (DBCoder *coder in array) {
+        block(coder);
+    }
+}
+
 - (void)enumerateManyToManyCoders:(void(^)(DBCoder *coder, DBTableConnection *connection))enumerationBlock
 {
     for (DBTableConnection *connection in [manyToManyCoders allKeys]) {
-        NSArray *array = manyToManyCoders[connection];
-        for (DBCoder *coder in array) {
-            enumerationBlock(coder, connection);
-        }
+        [self enumerateManyToManyCodersForConnection:connection usingBlock:^(DBCoder *connectionCoder) {
+            enumerationBlock(connectionCoder, connection);
+        }];
     }
 }
 

@@ -23,14 +23,18 @@ typedef void(^DBInsertingForeignBlock)(id<DBCoding> object, NSString *foreignKey
 - (void) setPrimaryKeyColumn:(NSString *)pkColumn;
 - (void) setTable:(NSString *)table;
 
-
+/* one-to-one relations */
 - (void) enumerateOneToOneRelatedObjects:(DBInsertingBlock)block;
 
-- (void) enumerateManyToManyRelationCoders:(void(^)(DBCoder * connection_coder, DBTableConnection *connection))block;
+/* many-to-many relations */
+- (NSArray *)allManyToManyConnections;
+- (void)enumerateManyToManyCodersForConnection:(DBTableConnection *)connection usingBlock:(void(^)(DBCoder *connectionCoder))block;
+- (void)enumerateManyToManyRelationCoders:(void(^)(DBCoder *connection_coder, DBTableConnection *connection))block;
 
+/* one-to-many relations */
 - (NSArray *)allOneToManyForeignKeys;
-- (void) enumerateOneToManyRelatedObjectsForKey:(NSString *)foreignKey withBlock:(void(^)(id<DBCoding>object))block;
-- (void) enumerateOneToManyRelatedObjects:(DBInsertingForeignBlock)block;
+- (void)enumerateOneToManyRelatedObjectsForKey:(NSString *)foreignKey withBlock:(void(^)(id<DBCoding>object))block;
+- (void)enumerateOneToManyRelatedObjects:(DBInsertingForeignBlock)block;
 
 /* Init for decoding */
 - (id) initWithResultSet:(FMResultSet *) resultSet dbService:(DBCodingService *) service;
@@ -39,7 +43,7 @@ typedef void(^DBInsertingForeignBlock)(id<DBCoding> object, NSString *foreignKey
 - (id) initWithDBObject:(id<DBCoding>) rootObject;
 - (id) initWithDBObject:(id<DBCoding>) rootObject as:(Class) objectClass;
 
-/* Init for to-many relations */
+/* Init for many-to-many relations */
 - (id) initWithConnection:(DBTableConnection *) connection;
 
 /* Access to statements */

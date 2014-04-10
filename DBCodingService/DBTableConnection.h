@@ -11,10 +11,11 @@
 @interface DBTableConnection : NSObject<NSCopying>
 
 @property (nonatomic, strong) NSString *table;
+@property (nonatomic, strong) NSString *relationPKColumn;
 @property (nonatomic, strong) NSString *encoderColumn;
 @property (nonatomic, strong) NSString *encodedObjectColumn;
 
-- (id)initWithTable:(NSString *)table encoderColumn:(NSString *)onColumn encodedObjectColumn:(NSString *) _byColumn;
-+ (id)connectionWithTable:(NSString *)table encoderColumn:(NSString *)encoderColumn encodedObjectColumn:(NSString *)encodedColumn;
+- (id)initWithTable:(NSString *)table relationPKColumn:(NSString *)relationPKColumn encoderColumn:(NSString *)onColumn encodedObjectColumn:(NSString *) _byColumn;
++ (id)connectionWithTable:(NSString *)table relationPKColumn:(NSString *)relationPKColumn encoderColumn:(NSString *)encoderColumn encodedObjectColumn:(NSString *)encodedColumn;
 
 @end

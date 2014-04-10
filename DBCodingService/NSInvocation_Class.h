@@ -17,6 +17,7 @@
 + (id) resultOfInvokingTarget:(id) object withSelector:(SEL) selector ofClass:(Class) objectClass arg:(id)arg;
 
 + (BOOL) boolOfInvokingTarget:(id) object withSelector:(SEL) selector ofClass:(Class) objectClass arg:(id)arg;
++ (BOOL) boolOfInvokingTarget:(id) object withSelector:(SEL) selector ofClass:(Class) objectClass arg:(id)arg1 arg:(id)arg2;
 
 @end
 

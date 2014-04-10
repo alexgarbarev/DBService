@@ -9,16 +9,17 @@
 #import <Foundation/Foundation.h>
 
 #import "DBTableConnection.h"
+#import "DBCoding.h"
 
-@protocol DBCoding;
 @class DBCoder;
 
 #define dbPrimaryKeyUndefined 0
 
-typedef void(^DBCodingBlock)(DBCoder * table_coder, id object);
-typedef void(^DBDecodingBlock)(DBCoder * table_decoder);
+typedef void(^DBCodingBlock)(DBCoder *table_coder, id object);
+typedef void(^DBDecodingBlock)(DBCoder *table_decoder);
 
 @interface DBCoder : NSObject
+
 /** Indicate to skip zero values like 0 or "" in queries or not */
 @property (nonatomic, readwrite) BOOL shouldSkipZeroValues;  /* Default: YES */
 
@@ -48,20 +49,5 @@ typedef void(^DBDecodingBlock)(DBCoder * table_decoder);
 
 /** Decode many-to-many objects */
 - (void)decodeObjectsFromConnection:(DBTableConnection *)connection decoding:(DBDecodingBlock)decodingBlock;
-
-@end
-
-@protocol DBCoding <NSObject>
-
-/* Do not call this method directly to init object with coder.
- * Use objectOfClass:fromDecoder: in QliqDBService instead */
-- (id)initWithDBCoder:(DBCoder *)decoder;
-
-- (void)encodeWithDBCoder:(DBCoder *)coder;
-
-- (NSString *)dbPKProperty; //KVC key for property which store primary key
-
-+ (NSString *)dbTable;      // table name for object
-+ (NSString *)dbPKColumn;   // primary key column name
 
 @end

@@ -29,6 +29,8 @@
     //Service, used to decoding:
     DBCodingService *decodingService;
     
+    DBTableConnection *relationConnection;
+    
     BOOL shouldSkipZeroValues;
 }
 
@@ -50,6 +52,8 @@
 
 - (void)encodeObjects:(NSArray *)objects connection:(DBTableConnection *)connection coding:(DBCodingBlock)codingBlock
 {
+    NSAssert(rootObjectClass, @"Many-To-Many relations not supported for connection-table encoders");
+
     NSMutableArray * coders = [[NSMutableArray alloc] initWithCapacity:[objects count]];
     
     for (id object in objects){
@@ -75,6 +79,7 @@
 
 - (void)encodeObjects:(NSArray *)objects withForeignKeyColumn:(NSString *)foreignKeyColumn
 {
+    NSAssert(rootObjectClass, @"One-To-Many relations not supported for connection-table encoders");
     [data setObjects:objects withForeignKey:foreignKeyColumn];
 }
 
@@ -149,6 +154,7 @@
         table = [connection table];
         shouldSkipZeroValues = YES;
         data = [[DBCoderData alloc] init];
+        relationConnection = connection;
     }
     return self;
 }
@@ -182,10 +188,10 @@
         
         /* Ignoring primary key encoding, since we access to primaryKey property directly (ignoring to avoid duplicating) */
         data = [[DBCoderData alloc] initWithEncodingIgnoredColumns:@[pkColumnName]];
+        rootObjectClass = NSStringFromClass(objectClass);
 
         [NSInvocation invokeTarget:rootObject withSelector:@selector(encodeWithDBCoder:) ofClass:objectClass arg:self];
         
-        rootObjectClass = NSStringFromClass(objectClass);
         pkColumnKey = [NSInvocation resultOfInvokingTarget:rootObject withSelector:@selector(dbPKProperty) ofClass:objectClass];
         pkColumnValue = [(NSObject *)rootObject valueForKey:pkColumnKey];
     }
@@ -233,6 +239,11 @@
 - (void) setTable:(NSString *)_table
 {
     table = _table;
+}
+
+- (void) setRootObjectClass:(Class)clazz
+{
+    rootObjectClass = NSStringFromClass(clazz);
 }
 
 - (BOOL) shouldSkipObject:(id)object{
@@ -363,7 +374,7 @@
         {
             id object = [data valueForColumn:column];
             /* save object in db by calling block */
-            id insertedId = block(object, objectClass);
+            id insertedId = block(object, objectClass, column);
             if (insertedId){
                 /* replace db object value with his id */
                 [data setObject:insertedId withClass:nil forColumn:column];
@@ -386,10 +397,14 @@
     }
 }
 
-- (void) enumerateManyToManyRelationCoders:(void(^)(DBCoder * connection_coder, DBTableConnection *connection))block
+- (void) enumerateManyToManyRelationCoders:(void(^)(DBCoder * connectionCoder, DBTableConnection *connection))block
 {
     if (block) {
-        [data enumerateManyToManyCoders:block];
+        for (DBTableConnection *connection in [data allManyToManyConnections]) {
+            [data enumerateManyToManyCodersForConnection:connection usingBlock:^(DBCoder *connectionCoder) {
+                block(connectionCoder, connection);
+            }];
+        }
     }
 }
 
@@ -408,12 +423,35 @@
 - (void)enumerateOneToManyRelatedObjects:(DBInsertingForeignBlock)block
 {
     if (block) {
-        [data enumerateOneToManyObjects:block];
+        for (NSString *foreignKey in [data allOneToManyForeignKeys]) {
+            [data enumerateOneToManyObjectsForKey:foreignKey usingBlock:^(id value) {
+                block(value, foreignKey);
+            }];
+        }
     }
 }
 
 - (Class) rootObjectClass{
     return NSClassFromString(rootObjectClass);
+}
+
+- (void)mergeWihExistingConnectionCoder:(DBCoder *)existingCoder
+{
+    if (existingCoder) {
+        NSArray *existingColumns = [existingCoder->data allColumns];
+        NSArray *myColumns = [data allColumns];
+        for (NSString *column in existingColumns) {
+            if (![myColumns containsObject:column]) {
+                [self encodeObject:[existingCoder decodeObjectForColumn:column] forColumn:column];
+            }
+        }
+    }
+    
+}
+
+- (DBTableConnection *)connection
+{
+    return relationConnection;
 }
 
 @end

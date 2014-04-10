@@ -31,11 +31,9 @@
 - (void)setCoders:(NSArray *)coders forConnection:(DBTableConnection *)connection;
 
 - (NSArray *)allOneToManyForeignKeys;
-- (void)enumerateOneToManyObjects:(void(^)(id value, NSString *foreignKey))enumerationBlock;
 - (void)enumerateOneToManyObjectsForKey:(NSString *)foreigKey usingBlock:(void(^)(id value))enumerationBlock;
 
 - (NSArray *)allManyToManyConnections;
 - (void)enumerateManyToManyCodersForConnection:(DBTableConnection *)connection usingBlock:(void(^)(DBCoder *connectionCoder))block;
-- (void)enumerateManyToManyCoders:(void(^)(DBCoder *coder, DBTableConnection *connection))enumerationBlock;
 
 @end

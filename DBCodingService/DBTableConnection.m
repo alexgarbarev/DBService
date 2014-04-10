@@ -14,16 +14,17 @@
 
 @synthesize table, encoderColumn, encodedObjectColumn;
 
-+ (id) connectionWithTable:(NSString *) table encoderColumn:(NSString *) onColumn encodedObjectColumn:(NSString *) byColumn{
-    return [[DBTableConnection alloc] initWithTable:table encoderColumn:onColumn encodedObjectColumn:byColumn];
++ (id) connectionWithTable:(NSString *)table relationPKColumn:(NSString *)relationPKColumn encoderColumn:(NSString *) onColumn encodedObjectColumn:(NSString *) byColumn{
+    return [[DBTableConnection alloc] initWithTable:table relationPKColumn:relationPKColumn encoderColumn:onColumn encodedObjectColumn:byColumn];
 }
 
-- (id) initWithTable:(NSString *) _table encoderColumn:(NSString *) _onColumn encodedObjectColumn:(NSString *) _byColumn{
+- (id) initWithTable:(NSString *)_table relationPKColumn:(NSString *)relationPKColumn encoderColumn:(NSString *) _onColumn encodedObjectColumn:(NSString *) _byColumn{
     self = [super init];
     if (self) {
         table = _table;
         encoderColumn = _onColumn;
         encodedObjectColumn = _byColumn;
+        self.relationPKColumn = relationPKColumn;
         [self calculateHash];
     }
     return self;
@@ -50,7 +51,7 @@
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    return [[DBTableConnection alloc] initWithTable:self.table encoderColumn:self.encoderColumn encodedObjectColumn:self.encodedObjectColumn];
+    return [[DBTableConnection alloc] initWithTable:self.table relationPKColumn:self.relationPKColumn encoderColumn:self.encoderColumn encodedObjectColumn:self.encodedObjectColumn];
 }
 
 @end

@@ -79,6 +79,7 @@
 		5B863A4E169EC266004C6490 /* NSInvocation_Class.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSInvocation_Class.m; sourceTree = "<group>"; };
 		7E4B7DBD7FC940728B5F2972 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		9D85D4DD77AA477A83449E27 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA7845D818F6D9AF00F83435 /* DBCoding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBCoding.h; sourceTree = "<group>"; };
 		FA8E6B4318F5BC9200A0F79F /* DBCoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCoder.h; sourceTree = "<group>"; };
 		FA8E6B4418F5BC9200A0F79F /* DBCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBCoder.m; sourceTree = "<group>"; };
 		FA8E6B4518F5BC9200A0F79F /* DBCoder_DBService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCoder_DBService.h; sourceTree = "<group>"; };
@@ -200,6 +201,7 @@
 		5B863A45169EC266004C6490 /* DBCodingService */ = {
 			isa = PBXGroup;
 			children = (
+				FA7845D818F6D9AF00F83435 /* DBCoding.h */,
 				FA8E6B4218F5BC9200A0F79F /* DBCoder */,
 				5B863A49169EC266004C6490 /* DBCodingService.h */,
 				5B863A4A169EC266004C6490 /* DBCodingService.m */,
@@ -284,6 +286,7 @@
 		5B8639AC169EBE0B004C6490 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastTestingUpgradeCheck = 0510;
 				LastUpgradeCheck = 0450;
 			};
 			buildConfigurationList = 5B8639AF169EBE0B004C6490 /* Build configuration list for PBXProject "DBCodingServiceExample" */;

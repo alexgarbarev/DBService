@@ -81,7 +81,7 @@
     
     NSAssert([message.attachments count] == 1, @"");
     
-    [service deleteObject:message mode:DBModeAll completion:nil];
+    [service deleteObject:message completion:nil];
 }
 
 - (void)testManyToMany
@@ -125,7 +125,7 @@
     attachment2 = [[message2 attachments] lastObject];
     NSAssert([attachment2.files count] == 2, nil);
     
-    [service deleteObject:message mode:DBModeAll completion:nil];
+    [service deleteObject:message completion:nil];
 }
 
 

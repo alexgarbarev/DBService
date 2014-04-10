@@ -10,18 +10,20 @@
 @class DBCodingService;
 
 typedef void(^DBStatement)(NSString * query, NSArray * args);
-typedef id(^DBInsertingBlock)(id<DBCoding> object, Class objectClass);
+typedef id(^DBInsertingBlock)(id<DBCoding> object, Class objectClass, NSString *column);
 typedef void(^DBInsertingForeignBlock)(id<DBCoding> object, NSString *foreignKey);
 
 
 @interface DBCoder(DBService)
 
+/* TODO: refactor this setters */
 + (BOOL) isCorrectPrimaryKey:(id) pkKey;
 - (BOOL) havePrimaryKey;
 - (void) setPrimaryKey:(id) pkValue;
 - (id) primaryKey;
 - (void) setPrimaryKeyColumn:(NSString *)pkColumn;
 - (void) setTable:(NSString *)table;
+- (void) setRootObjectClass:(Class)clazz;
 
 /* one-to-one relations */
 - (void) enumerateOneToOneRelatedObjects:(DBInsertingBlock)block;
@@ -52,5 +54,7 @@ typedef void(^DBInsertingForeignBlock)(id<DBCoding> object, NSString *foreignKey
 - (void) insertStatement:(DBStatement) statement replace:(BOOL) replace;
 
 - (Class) rootObjectClass;
+
+- (DBTableConnection *)connection;
 
 @end

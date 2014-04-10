@@ -122,27 +122,9 @@
     }
 }
 
-- (void)enumerateManyToManyCoders:(void(^)(DBCoder *coder, DBTableConnection *connection))enumerationBlock
-{
-    for (DBTableConnection *connection in [manyToManyCoders allKeys]) {
-        [self enumerateManyToManyCodersForConnection:connection usingBlock:^(DBCoder *connectionCoder) {
-            enumerationBlock(connectionCoder, connection);
-        }];
-    }
-}
-
 - (NSArray *)allOneToManyForeignKeys
 {
     return [oneToManyValues allKeys];
-}
-
-- (void)enumerateOneToManyObjects:(void(^)(id value, NSString *foreignKey))enumerationBlock
-{
-    for (NSString *key in [self allOneToManyForeignKeys]) {
-        [self enumerateOneToManyObjectsForKey:key usingBlock:^(id value) {
-            enumerationBlock(value, key);
-        }];
-    }
 }
 
 - (void)enumerateOneToManyObjectsForKey:(NSString *)foreigKey usingBlock:(void(^)(id value))enumerationBlock

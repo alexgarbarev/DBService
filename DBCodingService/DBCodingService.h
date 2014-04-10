@@ -17,7 +17,6 @@ typedef void(^DBSaveCompletion)(BOOL wasInserted, id objectId, NSError * error);
 typedef void(^DBDeleteCompletion)(NSError * error);
 
 typedef enum {DBModeSingle = 0, DBModeManyToMany = 1u << 1, DBModeOneToOne = 1u << 2, DBModeOneToMany = 1u << 3} DBMode;
-
 #define DBModeAll (DBModeManyToMany|DBModeOneToOne|DBModeOneToMany)
 
 typedef enum { DBErrorCodeObjectIsNil = 100, DBErrorCodeObjectIsNotExist, DBErrorCodeUnknown } DBErrorCode;
@@ -80,8 +79,8 @@ typedef enum { DBErrorCodeObjectIsNil = 100, DBErrorCodeObjectIsNotExist, DBErro
 #pragma mark - Deletions
 
 /* Used object instead of only object's primary key to ablility delete related objects */
-- (void)deleteObject:(id<DBCoding>)object mode:(DBMode)mode completion:(DBDeleteCompletion)completion;
-- (void)deleteObject:(id<DBCoding>)object withSchemeClass:(Class)objectClass mode:(DBMode)mode completion:(DBDeleteCompletion)completion;
+- (void)deleteObject:(id<DBCoding>)object completion:(DBDeleteCompletion)completion;
+- (void)deleteObject:(id<DBCoding>)object withSchemeClass:(Class)objectClass completion:(DBDeleteCompletion)completion;
 
 #pragma mark - Utils
 

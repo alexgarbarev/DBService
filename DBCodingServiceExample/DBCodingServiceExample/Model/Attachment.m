@@ -13,7 +13,7 @@
 
 - (DBTableConnection *)attachmentToFileConnection
 {
-    return [DBTableConnection connectionWithTable:@"attachment_file" encoderColumn:@"attachment_id" encodedObjectColumn:@"file_id"];
+    return [DBTableConnection connectionWithTable:@"attachment_file" relationPKColumn:@"id" encoderColumn:@"attachment_id" encodedObjectColumn:@"file_id"];
 }
 
 - (void)encodeWithDBCoder:(DBCoder *)coder
@@ -61,6 +61,11 @@
 + (NSString *)dbTable
 {
     return @"attachment";
+}
+
++ (BOOL)dbShouldDeleteManyToManyRelatedObjectWithClass:(id)object withConnection:(DBTableConnection *)connection
+{
+    return [object isKindOfClass:[File class]];
 }
 
 

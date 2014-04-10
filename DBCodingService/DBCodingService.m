@@ -90,15 +90,6 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     return success;
 }
 
-- (FMResultSet *)executeQuery:(NSString *)query withArgumentsInArray:(NSArray *)args
-{
-    __block FMResultSet *result;
-    [self performBlock:^(FMDatabase *db) {
-        result = [db executeQuery:query withArgumentsInArray:args];
-    }];
-    return result;
-}
-
 - (NSError *)lastError
 {
     __block NSError *error;
@@ -424,14 +415,17 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     
     NSMutableArray * resultArray = [[NSMutableArray alloc] init];
    
-    FMResultSet * resultSet = [self executeQuery:query withArgumentsInArray:args];
-    
-    while ([resultSet next]) {
-        DBCoder * decoder = [[DBCoder alloc] initWithResultSet:resultSet dbService:self];
-        [resultArray addObject:decoder];
-    }
-    
-    [resultSet close];
+    [self performBlock:^(FMDatabase *db) {
+        FMResultSet * resultSet = [db executeQuery:query withArgumentsInArray:args];
+
+        while ([resultSet next]) {
+            DBCoder * decoder = [[DBCoder alloc] initWithResultSet:resultSet dbService:self];
+            [resultArray addObject:decoder];
+        }
+        
+        [resultSet close];
+    }];
+
     
     return resultArray;
 }

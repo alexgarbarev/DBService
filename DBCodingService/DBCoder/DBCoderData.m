@@ -94,7 +94,9 @@
 
 - (void)setObjects:(NSArray *)objects withForeignKey:(NSString *)key
 {
-    oneToManyValues[key] = objects;
+    if (objects && key) {
+        oneToManyValues[key] = objects;
+    }
 }
 
 - (void)removeObjectsForForeignKey:(NSString *)key

@@ -47,17 +47,17 @@
     service = [[DBCodingService alloc] initWithDatabaseQueue:queue];
     
     
-//    Attachment *attachment1 = [Attachment new];
-//    attachment1.filePath = @"Path1";
-//
-//    Attachment *attachment2 = [Attachment new];
-//    attachment2.filePath = @"Path2";
-//
-//    Message *message = [Message new];
-//    message.text = @"Hello world";
-//    message.attachments = @[attachment1, attachment2];
-//    
-//    [service save:message completion:nil];
+    Attachment *attachment1 = [Attachment new];
+    attachment1.filePath = @"Path1";
+
+    Attachment *attachment2 = [Attachment new];
+    attachment2.filePath = @"Path2";
+
+    Message *message = [Message new];
+    message.text = @"Hello world";
+    message.attachments = @[attachment1, attachment2];
+    
+    [service save:message completion:nil];
     
     Message *message2 = [service objectWithId:@(1) andClass:[Message class]];
     Attachment *atach = [message2.attachments lastObject];

@@ -53,7 +53,6 @@ typedef enum { DBErrorCodeObjectIsNil = 100, DBErrorCodeObjectIsNotExist, DBErro
 /** Save object synchronically and dependecies specified by mode using specified schemeClass */
 - (void)save:(id<DBCoding>)object withSchemeClass:(Class)schemeClass mode:(DBMode)mode completion:(DBSaveCompletion)completion;
 
-/* Accessing */
 #pragma mark - Queries
 
 /** Fetch object with specified primaryKey and given objectClass (must conform DBCoding protocol) */
@@ -67,7 +66,11 @@ typedef enum { DBErrorCodeObjectIsNil = 100, DBErrorCodeObjectIsNotExist, DBErro
  * Usually it is SELECT * FROM object_table WHERE ...; */
 - (NSArray *)decodersFromSQLQuery:(NSString *)query withArgs:(NSArray *)args;
 
+/** Returns array of object of given class, This methos is combination of decodersFromSQLQuery:withArgs and objectOfClass:fromDecoder: */
+- (NSArray *)objectsOfClass:(Class)objectClass fromSQLQuery:(NSString *)query withArgs:(NSArray *)args;
+
 #pragma mark - Construction objects from decoders
+
 /** Creates object with his related objects by specified class and decoder */
 - (id)objectOfClass:(Class)objectClass fromDecoder:(DBCoder *)decoder;
 

@@ -428,6 +428,22 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     return resultArray;
 }
 
+- (NSArray *)objectsOfClass:(Class)objectClass fromSQLQuery:(NSString *)query withArgs:(NSArray *)args
+{
+    if (![objectClass conformsToProtocol:@protocol(DBCoding)]) {
+        NSLog(@"You trying to fetch objects of class whicn not confirms DBCoding");
+        return nil;
+    }
+    
+    NSArray *decoders = [self decodersFromSQLQuery:query withArgs:args];
+    NSMutableArray *objects = [[NSMutableArray alloc] initWithCapacity:[decoders count]];
+    for (DBCoder *decoder in decoders) {
+        id object = [self objectOfClass:objectClass fromDecoder:decoder];
+        [objects addObject:object];
+    }
+    return objects;
+}
+
 - (id)latestPrimaryKeyForClass:(Class)objectClass{
     
     id primaryKey = nil;

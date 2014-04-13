@@ -10,26 +10,23 @@
 #import "DBCoder_DBService.h"
 #import "DBCoderData.h"
 #import "DBCodingService.h"
+#import "DBScheme.h"
+#import "DBTableConnectionScheme.h"
 
 #import "NSInvocation_Class.h"
 
-@implementation DBCoder{
-
+@implementation DBCoder
+{
     //Values:
-    NSString * rootObjectClass;
-    id pkColumnValue;
-
     DBCoderData *data;
     
     //Scheme:
-    NSString * table;
-    NSString * pkColumnName;
-    NSString * pkColumnKey;
+    id<DBScheme> scheme;
     
-    //Service, used to decoding:
+    //Decoding:
     DBCodingService *decodingService;
     
-    DBTableConnection *relationConnection;
+    id encodingObject;
     
     BOOL shouldSkipZeroValues;
 }
@@ -52,7 +49,7 @@
 
 - (void)encodeObjects:(NSArray *)objects connection:(DBTableConnection *)connection coding:(DBCodingBlock)codingBlock
 {
-    NSAssert(rootObjectClass, @"Many-To-Many relations not supported for connection-table encoders");
+    NSAssert(![encodingObject isKindOfClass:[DBTableConnection class]], @"Many-To-Many relations not supported for connection-table encoders");
 
     NSMutableArray * coders = [[NSMutableArray alloc] initWithCapacity:[objects count]];
     
@@ -69,18 +66,20 @@
 
 - (void)encodeObject:(id)object forColumn:(NSString *)column
 {
-    [data setObject:object withClass:[object class] forColumn:column];
+    [data setObject:object withScheme:[[object class] scheme] forColumn:column];
 }
 
-- (void)encodeObject:(id) object withSchemeClass:(Class)objectClass forColumn:(NSString *)column
+- (void)encodeObject:(id)object withScheme:(id<DBScheme>)_scheme forColumn:(NSString *)column
 {
-    [data setObject:object withClass:objectClass forColumn:column];
+    [data setObject:object withScheme:_scheme forColumn:column];
 }
 
 - (void)encodeObjects:(NSArray *)objects withForeignKeyColumn:(NSString *)foreignKeyColumn
 {
-    NSAssert(rootObjectClass, @"One-To-Many relations not supported for connection-table encoders");
-    [data setObjects:objects withForeignKey:foreignKeyColumn];
+    NSAssert(![encodingObject isKindOfClass:[DBTableConnection class]], @"One-To-Many relations not supported for connection-table encoders");
+    id<DBScheme>_scheme = [[[objects firstObject] class] scheme];
+    NSParameterAssert(_scheme);
+    [data setObjects:objects withScheme:_scheme withForeignKey:foreignKeyColumn];
 }
 
 #pragma mark - Decoding
@@ -94,46 +93,48 @@
 {
     NSString * query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ?", connection.table, connection.encoderColumn];
     
-    NSArray * decoders = [decodingService decodersFromSQLQuery:query withArgs:@[pkColumnValue]];
+    id primaryKey = [scheme primaryKeyValueFromObject:encodingObject];
     
-    [decoders enumerateObjectsUsingBlock:^(DBCoder * decoder, NSUInteger idx, BOOL *stop) {
+    NSArray * decoders = [decodingService decodersWithScheme:nil fromSQLQuery:query withArgs:@[primaryKey]];
+    
+    [decoders enumerateObjectsUsingBlock:^(DBCoder *decoder, NSUInteger idx, BOOL *stop) {
         if (codingBlock) codingBlock(decoder);
     }];
 }
 
-- (id<DBCoding>)decodeObjectOfClass:(Class)objectClass withSchemeClass:(Class)asClass forColumn:(NSString *)column
+- (id)decodeObjectWithScheme:(id<DBScheme>)_scheme forColumn:(NSString *)column
 {
-    id objectId = [self decodeObjectForColumn:column];
-    return [decodingService objectWithId:objectId andClass:objectClass withSchemeClass:asClass];
+    if (_scheme) {
+        id objectId = [self decodeObjectForColumn:[_scheme primaryKeyColumn]];
+        return [decodingService objectWithId:objectId andScheme:_scheme];
+    } else {
+        return [self decodeObjectForColumn:column];
+    }
 }
 
-- (id<DBCoding>)decodeObjectOfClass:(Class)objectClass forColumn:(NSString *)column
-{
-    return [self decodeObjectOfClass:objectClass withSchemeClass:objectClass forColumn:column];
-}
-
-- (NSArray *)decodeObjectsOfClass:(Class)schemeClass withForeignKeyColumn:(NSString *)foreignKeyColumn
+- (NSArray *)decodeObjectsWithScheme:(id<DBScheme>)_scheme withForeignKeyColumn:(NSString *)foreignKeyColumn
 {
     if (!foreignKeyColumn) {
-        NSLog(@"You are trying to fetch objects of %@ class with nil foreign key.",schemeClass);
+        NSLog(@"You are trying to fetch objects of %@ scheme with nil foreign key.",_scheme);
         return nil;
     }
     
-    if (!pkColumnValue) {
-        NSLog(@"You are trying to fetch objects of %@ class when foreign key (%@) refers to nil",schemeClass, foreignKeyColumn);
+    id primaryKey = [scheme primaryKeyValueFromObject:encodingObject];
+    if (!primaryKey) {
+        NSLog(@"You are trying to fetch objects of %@ scheme when foreign key (%@) refers to nil",_scheme, foreignKeyColumn);
         return nil;
     }
-    
-    NSString *foreignTable = [schemeClass dbTable];
+
+    NSString *foreignTable = [scheme table];
     
     NSString *query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ?", foreignTable, foreignKeyColumn];
     
-    NSArray *decoders = [decodingService decodersFromSQLQuery:query withArgs:@[pkColumnValue]];
+    NSArray *decoders = [decodingService decodersWithScheme:_scheme fromSQLQuery:query withArgs:@[primaryKey]];
     
     NSMutableArray *objects = [[NSMutableArray alloc] initWithCapacity:[decoders count]];
     
     for (DBCoder *decoder in decoders) {
-        id object = [decodingService objectOfClass:schemeClass fromDecoder:decoder];
+        id object = [decodingService objectWithScheme:_scheme fromDecoder:decoder];
         [objects addObject:object];
     }
     
@@ -145,105 +146,69 @@
 
 @implementation DBCoder(DBService)
 
+- (id<DBScheme>)scheme
+{
+    return scheme;
+}
+
 #pragma mark - Initialization
 
-- (id) initWithConnection:(DBTableConnection *) connection{
+- (id)initWithConnection:(DBTableConnection *)connection
+{
     self = [super init];
     if (self) {
-        pkColumnName = [connection encoderColumn];
-        table = [connection table];
-        shouldSkipZeroValues = YES;
         data = [[DBCoderData alloc] init];
-        relationConnection = connection;
+        scheme = [[DBTableConnectionScheme alloc] initWithTableConnection:connection];
+        shouldSkipZeroValues = YES;
+        encodingObject = connection;
     }
     return self;
 }
 
-- (id) initWithResultSet:(FMResultSet *) resultSet dbService:(DBCodingService *) service{
+- (id)initWithResultSet:(FMResultSet *)resultSet scheme:(id<DBScheme>)_scheme dbService:(DBCodingService *)service
+{
     self = [super init];
     if (self) {
         decodingService = service;
         shouldSkipZeroValues = YES;
         data = [DBCoderData new];
+        scheme = _scheme;
 
         for (int i = 0; i < [resultSet columnCount]; i++){
             NSString * column = [resultSet columnNameForIndex:i];
             id object = [resultSet objectForColumnIndex:i];
             
             if (![object isKindOfClass:[NSNull class]]) {
-                [data setObject:object withClass:[object class] forColumn:column];
+                [data setObject:object withScheme:nil forColumn:column];
             }
         }
     }
     return self;
 }
 
-- (id) initWithDBObject:(id<DBCoding>) rootObject as:(Class) objectClass{
+/* Init for encoding object */
+- (id)initWithObject:(id)object scheme:(id<DBScheme>)_scheme
+{
     self = [super init];
     if (self) {
+        scheme = _scheme;
+        encodingObject = object;
         
         shouldSkipZeroValues = YES;
-        pkColumnName = [objectClass dbPKColumn];
-        table = [objectClass dbTable];
         
         /* Ignoring primary key encoding, since we access to primaryKey property directly (ignoring to avoid duplicating) */
-        data = [[DBCoderData alloc] initWithEncodingIgnoredColumns:@[pkColumnName]];
-        rootObjectClass = NSStringFromClass(objectClass);
+        data = [[DBCoderData alloc] initWithEncodingIgnoredColumns:@[[scheme primaryKeyColumn]]];
 
-        [NSInvocation invokeTarget:rootObject withSelector:@selector(encodeWithDBCoder:) ofClass:objectClass arg:self];
-        
-        pkColumnKey = [NSInvocation resultOfInvokingTarget:rootObject withSelector:@selector(dbPKProperty) ofClass:objectClass];
-        pkColumnValue = [(NSObject *)rootObject valueForKey:pkColumnKey];
+        [scheme encodeObject:object withCoder:self];
     }
     return self;
 }
 
-- (id) initWithDBObject:(id<DBCoding>) rootObject{
-    return [self initWithDBObject:rootObject as:[rootObject class]];
-}
-
 #pragma mark - Primary key managment
 
-+ (BOOL) isCorrectPrimaryKey:(id) pkKey{
-    BOOL havePK = NO;
-    
-    // exist only if not nil
-    havePK = pkKey != nil;
-    
-    // and not 0 if nsnumber
-    if (pkKey && [pkKey isKindOfClass:[NSNumber class]]){
-        havePK = [pkKey integerValue] != dbPrimaryKeyUndefined;
-    }
-    
-    return havePK;
-    
-}
-
-- (BOOL) havePrimaryKey{
-    return [DBCoder isCorrectPrimaryKey:pkColumnValue];
-}
-
-- (id) primaryKey{
-    return pkColumnValue;
-}
-
-- (void) setPrimaryKey:(id) pkValue{
-    pkColumnValue = pkValue;
-}
-
-- (void) setPrimaryKeyColumn:(NSString *)pkColumn
+- (id)primaryKeyToEncode
 {
-    pkColumnName = pkColumn;
-}
-
-- (void) setTable:(NSString *)_table
-{
-    table = _table;
-}
-
-- (void) setRootObjectClass:(Class)clazz
-{
-    rootObjectClass = NSStringFromClass(clazz);
+    return [scheme primaryKeyValueFromObject:encodingObject];
 }
 
 - (BOOL) shouldSkipObject:(id)object{
@@ -263,9 +228,9 @@
 
 #pragma mark - Update query
 
-- (void) updateStatement:(DBStatement) statement{
-    
-    NSMutableString * query = [[NSMutableString alloc] initWithFormat:@"UPDATE %@ SET", table];
+- (void)updateStatement:(DBStatement)statement
+{
+    NSMutableString * query = [[NSMutableString alloc] initWithFormat:@"UPDATE %@ SET", [scheme table]];
     NSMutableArray * arguments = [[NSMutableArray alloc] initWithCapacity:[data columnsCount]];
     
     __block int columsToUpdate = 0;
@@ -292,22 +257,27 @@
         query = nil;
     }
     
-    [query appendFormat:@" WHERE %@ = ?;",pkColumnName];
-    [arguments addObject:pkColumnValue];
+    [query appendFormat:@" WHERE %@ = ?;",[scheme primaryKeyColumn]];
+    [arguments addObject:[scheme primaryKeyValueFromObject:encodingObject]];
     
     if (statement) statement(query, arguments);
 }
 
 #pragma mark - Delete statment
 
-- (void) deleteStatement:(void(^)(NSString * query, NSArray * args)) statement{
+- (void)deleteStatement:(void(^)(NSString * query, NSArray * args)) statement
+{
+    id primaryKey = [scheme primaryKeyValueFromObject:encodingObject];
     
-    NSString * query = [[NSString alloc] initWithFormat:@"DELETE FROM %@ WHERE %@ = ?",table, pkColumnName];
-    NSArray * arguments = @[pkColumnValue];
+    NSString *query;
+    NSArray *arguments;
     
-    if (!pkColumnValue){
+    if (!primaryKey) {
         query = nil;
         arguments = nil;
+    } else {
+        query = [[NSString alloc] initWithFormat:@"DELETE FROM %@ WHERE %@ = ?",[scheme table], [scheme primaryKeyColumn]];
+        arguments = @[primaryKey];
     }
     
     if (statement) statement(query, arguments);
@@ -315,10 +285,11 @@
 
 #pragma mark - Insert query
 
-- (void) insertStatement:(DBStatement) statement replace:(BOOL) replace{
+- (void)insertStatement:(DBStatement) statement replace:(BOOL)replace
+{
     
     NSMutableArray * arguments = [[NSMutableArray alloc] initWithCapacity:[data columnsCount]];
-    NSMutableString * query = [[NSMutableString alloc] initWithFormat:@"INSERT%@ INTO %@(",replace?@" OR REPLACE":@"",table];
+    NSMutableString * query = [[NSMutableString alloc] initWithFormat:@"INSERT%@ INTO %@(",replace?@" OR REPLACE":@"",[scheme table]];
     
     __block int columsToInsert = 0;
     void(^addColumn)(NSString * column, id value) = ^(NSString * column, id value){
@@ -328,11 +299,11 @@
         columsToInsert++;
     };
     
-    BOOL insertPK = [self havePrimaryKey];
+    BOOL insertPK = [self primaryKeyToEncode] != nil;
     int keys_count = [data columnsCount];
     
     if (insertPK){
-        addColumn(pkColumnName, pkColumnValue);
+        addColumn([scheme primaryKeyColumn], [self primaryKeyToEncode]);
     }
     
     for (NSString * key in [data allColumns]){
@@ -367,17 +338,17 @@
 {    
     for (NSString * column in [data allColumns])
     {
-        Class objectClass = [data valueClassForColumn:column];
+        id<DBScheme> objectScheme = [data valueSchemeForColumn:column];
         
         /* If it is db-coding object */
-        if ([objectClass conformsToProtocol:@protocol(DBCoding)])
+        if (objectScheme)
         {
             id object = [data valueForColumn:column];
             /* save object in db by calling block */
-            id insertedId = block(object, objectClass, column);
+            id insertedId = block(object, objectScheme, column);
             if (insertedId){
                 /* replace db object value with his id */
-                [data setObject:insertedId withClass:nil forColumn:column];
+                [data setObject:insertedId withScheme:nil forColumn:column];
             } else {
                 [data removeObjectForColumn:column];
             }
@@ -413,7 +384,7 @@
     return [data allOneToManyForeignKeys];
 }
 
-- (void) enumerateOneToManyRelatedObjectsForKey:(NSString *)foreignKey withBlock:(void(^)(id<DBCoding>object))block
+- (void)enumerateOneToManyRelatedObjectsForKey:(NSString *)foreignKey withBlock:(void(^)(id object, id<DBScheme>scheme))block
 {
     if (block) {
         [data enumerateOneToManyObjectsForKey:foreignKey usingBlock:block];
@@ -424,34 +395,11 @@
 {
     if (block) {
         for (NSString *foreignKey in [data allOneToManyForeignKeys]) {
-            [data enumerateOneToManyObjectsForKey:foreignKey usingBlock:^(id value) {
-                block(value, foreignKey);
+            [data enumerateOneToManyObjectsForKey:foreignKey usingBlock:^(id value, id<DBScheme>_scheme) {
+                block(value, _scheme, foreignKey);
             }];
         }
     }
-}
-
-- (Class) rootObjectClass{
-    return NSClassFromString(rootObjectClass);
-}
-
-- (void)mergeWihExistingConnectionCoder:(DBCoder *)existingCoder
-{
-    if (existingCoder) {
-        NSArray *existingColumns = [existingCoder->data allColumns];
-        NSArray *myColumns = [data allColumns];
-        for (NSString *column in existingColumns) {
-            if (![myColumns containsObject:column]) {
-                [self encodeObject:[existingCoder decodeObjectForColumn:column] forColumn:column];
-            }
-        }
-    }
-    
-}
-
-- (DBTableConnection *)connection
-{
-    return relationConnection;
 }
 
 @end

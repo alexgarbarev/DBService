@@ -24,7 +24,7 @@
     self = [super init];
     if (self) {
         self.text = [decoder decodeObjectForColumn:@"text"];
-        self.attachments = [decoder decodeObjectsOfClass:[Attachment class] withForeignKeyColumn:@"messageId"];
+        self.attachments = [decoder decodeObjectsWithScheme:[Attachment scheme] withForeignKeyColumn:@"messageId"];
     }
     return self;
 }

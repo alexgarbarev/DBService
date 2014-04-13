@@ -8,22 +8,18 @@
 #import "FMDatabase.h"
 
 @class DBCodingService;
+@protocol DBScheme;
 
-typedef void(^DBStatement)(NSString * query, NSArray * args);
-typedef id(^DBInsertingBlock)(id<DBCoding> object, Class objectClass, NSString *column);
-typedef void(^DBInsertingForeignBlock)(id<DBCoding> object, NSString *foreignKey);
+typedef void(^DBStatement)(NSString *query, NSArray *args);
+typedef id(^DBInsertingBlock)(id object, id<DBScheme> scheme, NSString *column);
+typedef void(^DBInsertingForeignBlock)(id object, id<DBScheme> scheme, NSString *foreignKey);
 
 
 @interface DBCoder(DBService)
 
-/* TODO: refactor this setters */
-+ (BOOL) isCorrectPrimaryKey:(id) pkKey;
-- (BOOL) havePrimaryKey;
-- (void) setPrimaryKey:(id) pkValue;
-- (id) primaryKey;
-- (void) setPrimaryKeyColumn:(NSString *)pkColumn;
-- (void) setTable:(NSString *)table;
-- (void) setRootObjectClass:(Class)clazz;
+- (id)primaryKeyToEncode;
+
+- (id<DBScheme>)scheme;
 
 /* one-to-one relations */
 - (void) enumerateOneToOneRelatedObjects:(DBInsertingBlock)block;
@@ -35,26 +31,21 @@ typedef void(^DBInsertingForeignBlock)(id<DBCoding> object, NSString *foreignKey
 
 /* one-to-many relations */
 - (NSArray *)allOneToManyForeignKeys;
-- (void)enumerateOneToManyRelatedObjectsForKey:(NSString *)foreignKey withBlock:(void(^)(id<DBCoding>object))block;
+- (void)enumerateOneToManyRelatedObjectsForKey:(NSString *)foreignKey withBlock:(void(^)(id object, id<DBScheme>scheme))block;
 - (void)enumerateOneToManyRelatedObjects:(DBInsertingForeignBlock)block;
 
 /* Init for decoding */
-- (id) initWithResultSet:(FMResultSet *) resultSet dbService:(DBCodingService *) service;
+- (id)initWithResultSet:(FMResultSet *)resultSet scheme:(id<DBScheme>)scheme dbService:(DBCodingService *)service;
 
 /* Init for encoding object */
-- (id) initWithDBObject:(id<DBCoding>) rootObject;
-- (id) initWithDBObject:(id<DBCoding>) rootObject as:(Class) objectClass;
+- (id)initWithObject:(id)object scheme:(id<DBScheme>)scheme;
 
 /* Init for many-to-many relations */
-- (id) initWithConnection:(DBTableConnection *) connection;
+- (id)initWithConnection:(DBTableConnection *)connection;
 
 /* Access to statements */
 - (void) updateStatement:(DBStatement) statement;
 - (void) deleteStatement:(DBStatement) statement;
 - (void) insertStatement:(DBStatement) statement replace:(BOOL) replace;
-
-- (Class) rootObjectClass;
-
-- (DBTableConnection *)connection;
 
 @end

@@ -12,6 +12,7 @@
 @class FMDatabaseQueue;
 
 #import "DBCoder.h"
+#import "DBScheme.h"
 
 typedef void(^DBSaveCompletion)(BOOL wasInserted, id objectId, NSError * error);
 typedef void(^DBDeleteCompletion)(NSError * error);
@@ -55,23 +56,26 @@ typedef enum { DBErrorCodeObjectIsNil = 100, DBErrorCodeObjectIsNotExist, DBErro
 #pragma mark - Queries
 
 /** Fetch object with specified primaryKey and given objectClass (must conform DBCoding protocol) */
-- (id)objectWithId:(id)identifier andClass:(Class)objectClass;
+- (id)objectWithId:(id)identifier andClass:(Class)objectClass UNAVAILABLE_ATTRIBUTE;
 
 /** Fetch object with specified primaryKey, class for instance creation and schemeClass (which must conform DBCoding protocol) */
-- (id)objectWithId:(id)identifier andClass:(Class)objectClass withSchemeClass:(Class)schemeClass;
+- (id)objectWithId:(id)identifier andClass:(Class)objectClass withSchemeClass:(Class)schemeClass UNAVAILABLE_ATTRIBUTE;
+
+/** Fetch object with specified primaryKey and scheme */
+- (id)objectWithId:(id)identifier andScheme:(id<DBScheme>)scheme;
 
 /** Returns array of decoders for sql-query. To craete objects from decoders use objectOfClass:fromDecoder:
  * result of sql-query have to contain all columns which used by DBCoding objects in initWithDBCoder/encodeWithDBCoder methods
  * Usually it is SELECT * FROM object_table WHERE ...; */
-- (NSArray *)decodersFromSQLQuery:(NSString *)query withArgs:(NSArray *)args;
+- (NSArray *)decodersWithScheme:(id<DBScheme>)scheme fromSQLQuery:(NSString *)query withArgs:(NSArray *)args;
 
 /** Returns array of object of given class, This methos is combination of decodersFromSQLQuery:withArgs and objectOfClass:fromDecoder: */
-- (NSArray *)objectsOfClass:(Class)objectClass fromSQLQuery:(NSString *)query withArgs:(NSArray *)args;
+- (NSArray *)objectsWithScheme:(id<DBScheme>)scheme fromSQLQuery:(NSString *)query withArgs:(NSArray *)args;
 
 #pragma mark - Construction objects from decoders
 
 /** Creates object with his related objects by specified class and decoder */
-- (id)objectOfClass:(Class)objectClass fromDecoder:(DBCoder *)decoder;
+- (id)objectWithScheme:(id<DBScheme>)scheme fromDecoder:(DBCoder *)decoder;
 
 /** Creates object with his related objects by specified class, schemeClass and decoder */
 - (id)objectOfClass:(Class)objectClass withSchemeClass:(Class)schemeClass fromDecoder:(DBCoder *) decoder;
@@ -80,7 +84,7 @@ typedef enum { DBErrorCodeObjectIsNil = 100, DBErrorCodeObjectIsNotExist, DBErro
 
 /* Used object instead of only object's primary key to ablility delete related objects */
 - (void)deleteObject:(id<DBCoding>)object completion:(DBDeleteCompletion)completion;
-- (void)deleteObject:(id<DBCoding>)object withSchemeClass:(Class)objectClass completion:(DBDeleteCompletion)completion;
+- (void)deleteObject:(id)object withScheme:(id<DBScheme>)scheme completion:(DBDeleteCompletion)completion;
 
 #pragma mark - Utils
 
@@ -88,7 +92,7 @@ typedef enum { DBErrorCodeObjectIsNil = 100, DBErrorCodeObjectIsNotExist, DBErro
 - (id)reloadObject:(id<DBCoding>)object;
 
 /** it returns latest primary key. Useful for autoincrement PKs to know which PK will be insterted */
-- (id)latestPrimaryKeyForClass:(Class)objectClass;
+- (id)latestPrimaryKeyForScheme:(id<DBScheme>)scheme;
 
 
 @end

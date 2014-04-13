@@ -8,6 +8,7 @@
 
 #import "Attachment.h"
 #import "File.h"
+#import "DBScheme.h"
 
 @implementation Attachment
 
@@ -40,13 +41,14 @@
         NSMutableArray *files = [NSMutableArray new];
         DBTableConnection *connection = [self attachmentToFileConnection];
         [decoder decodeObjectsFromConnection:connection decoding:^(DBCoder *table_decoder) {
-            File *object = [table_decoder decodeObjectOfClass:[File class] forColumn:connection.encodedObjectColumn];
+            File *object = [table_decoder decodeObjectWithScheme:[File scheme] forColumn:connection.encodedObjectColumn];
             [files addObject:object];
         }];
         self.files = files;
     }
     return self;
 }
+
 
 - (NSString *)dbPKProperty
 {

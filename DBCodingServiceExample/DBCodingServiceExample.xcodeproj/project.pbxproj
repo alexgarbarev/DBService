@@ -29,6 +29,9 @@
 		5B863A50169EC266004C6490 /* DBCodingService.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A4A169EC266004C6490 /* DBCodingService.m */; };
 		5B863A51169EC266004C6490 /* DBTableConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A4C169EC266004C6490 /* DBTableConnection.m */; };
 		5B863A52169EC266004C6490 /* NSInvocation_Class.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A4E169EC266004C6490 /* NSInvocation_Class.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		FA7845E018FB0D5E00F83435 /* NSObject+DBScheme.m in Sources */ = {isa = PBXBuildFile; fileRef = FA7845DF18FB0D5E00F83435 /* NSObject+DBScheme.m */; };
+		FA7845E318FB0DDE00F83435 /* DBCodingScheme.m in Sources */ = {isa = PBXBuildFile; fileRef = FA7845E218FB0DDE00F83435 /* DBCodingScheme.m */; };
+		FA7845E718FB2B8400F83435 /* DBTableConnectionScheme.m in Sources */ = {isa = PBXBuildFile; fileRef = FA7845E618FB2B8400F83435 /* DBTableConnectionScheme.m */; };
 		FA8E6B4618F5BC9200A0F79F /* DBCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B4418F5BC9200A0F79F /* DBCoder.m */; };
 		FA8E6B4918F5BD2F00A0F79F /* DBCoderData.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B4818F5BD2F00A0F79F /* DBCoderData.m */; };
 		FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B4E18F5E07B00A0F79F /* Message.m */; };
@@ -80,6 +83,13 @@
 		7E4B7DBD7FC940728B5F2972 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		9D85D4DD77AA477A83449E27 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA7845D818F6D9AF00F83435 /* DBCoding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBCoding.h; sourceTree = "<group>"; };
+		FA7845DA18F92BDE00F83435 /* DBScheme.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBScheme.h; sourceTree = "<group>"; };
+		FA7845DE18FB0D5E00F83435 /* NSObject+DBScheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+DBScheme.h"; sourceTree = "<group>"; };
+		FA7845DF18FB0D5E00F83435 /* NSObject+DBScheme.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+DBScheme.m"; sourceTree = "<group>"; };
+		FA7845E118FB0DDE00F83435 /* DBCodingScheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCodingScheme.h; sourceTree = "<group>"; };
+		FA7845E218FB0DDE00F83435 /* DBCodingScheme.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBCodingScheme.m; sourceTree = "<group>"; };
+		FA7845E518FB2B8400F83435 /* DBTableConnectionScheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBTableConnectionScheme.h; sourceTree = "<group>"; };
+		FA7845E618FB2B8400F83435 /* DBTableConnectionScheme.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBTableConnectionScheme.m; sourceTree = "<group>"; };
 		FA8E6B4318F5BC9200A0F79F /* DBCoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCoder.h; sourceTree = "<group>"; };
 		FA8E6B4418F5BC9200A0F79F /* DBCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBCoder.m; sourceTree = "<group>"; };
 		FA8E6B4518F5BC9200A0F79F /* DBCoder_DBService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCoder_DBService.h; sourceTree = "<group>"; };
@@ -201,6 +211,7 @@
 		5B863A45169EC266004C6490 /* DBCodingService */ = {
 			isa = PBXGroup;
 			children = (
+				FA7845D918F92BB400F83435 /* Scheme */,
 				FA7845D818F6D9AF00F83435 /* DBCoding.h */,
 				FA8E6B4218F5BC9200A0F79F /* DBCoder */,
 				5B863A49169EC266004C6490 /* DBCodingService.h */,
@@ -212,6 +223,20 @@
 			);
 			name = DBCodingService;
 			path = ../DBCodingService;
+			sourceTree = "<group>";
+		};
+		FA7845D918F92BB400F83435 /* Scheme */ = {
+			isa = PBXGroup;
+			children = (
+				FA7845DA18F92BDE00F83435 /* DBScheme.h */,
+				FA7845DE18FB0D5E00F83435 /* NSObject+DBScheme.h */,
+				FA7845DF18FB0D5E00F83435 /* NSObject+DBScheme.m */,
+				FA7845E118FB0DDE00F83435 /* DBCodingScheme.h */,
+				FA7845E218FB0DDE00F83435 /* DBCodingScheme.m */,
+				FA7845E518FB2B8400F83435 /* DBTableConnectionScheme.h */,
+				FA7845E618FB2B8400F83435 /* DBTableConnectionScheme.m */,
+			);
+			path = Scheme;
 			sourceTree = "<group>";
 		};
 		FA8E6B4218F5BC9200A0F79F /* DBCoder */ = {
@@ -389,9 +414,12 @@
 				5B863A50169EC266004C6490 /* DBCodingService.m in Sources */,
 				FA8E6B4918F5BD2F00A0F79F /* DBCoderData.m in Sources */,
 				5B863A51169EC266004C6490 /* DBTableConnection.m in Sources */,
+				FA7845E718FB2B8400F83435 /* DBTableConnectionScheme.m in Sources */,
+				FA7845E018FB0D5E00F83435 /* NSObject+DBScheme.m in Sources */,
 				FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */,
 				5B2BED6A18F6905000A089CA /* File.m in Sources */,
 				5B863A52169EC266004C6490 /* NSInvocation_Class.m in Sources */,
+				FA7845E318FB0DDE00F83435 /* DBCodingScheme.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

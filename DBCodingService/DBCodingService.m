@@ -140,33 +140,33 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
 - (void)saveOneToManyWithId:(id)objectId inCoder:(DBCoder *)coder
 {
     NSMutableArray *savedIdentifiers = [NSMutableArray new];
-    __block Class objectsClass = nil;
+    __block id<DBScheme> objectsScheme = nil;
     
     NSArray *allKeys = [coder allOneToManyForeignKeys];
     
     for (NSString *foreignKey in allKeys)
     {
-        [coder enumerateOneToManyRelatedObjectsForKey:foreignKey withBlock:^(id<DBCoding> object) {
-            objectsClass = [object class];
-            DBCoder *coder = [[DBCoder alloc] initWithDBObject:object as:[object class]];
+        [coder enumerateOneToManyRelatedObjectsForKey:foreignKey withBlock:^(id object, id<DBScheme>scheme) {
+            objectsScheme = scheme;
+            DBCoder *coder = [[DBCoder alloc] initWithObject:object scheme:scheme];
             [coder encodeObject:objectId forColumn:foreignKey];
             
-            [self saveCoder:coder mode:DBModeAll completion:^(BOOL wasInserted, id objectId, NSError *error) {
+            [self saveCoder:coder mode:DBModeAll completion:^(BOOL wasInserted, id insertedObjectId, NSError *error) {
                 if (wasInserted) {
-                    [self setPrimaryKey:objectId forObject:object asClass:[object class]];
+                    [scheme setPrimaryKeyValue:insertedObjectId forObject:object];
                 }
                 if (error){
                     NSLog(@"%@",[error localizedDescription]);
                 }
-                [savedIdentifiers addObject:objectId];
+                [savedIdentifiers addObject:insertedObjectId];
             }];
         }];
-        if (objectsClass) {
+        if (objectsScheme) {
             NSString *idsPlaceholder = StringWithSqliteArgumentPlaceholder([savedIdentifiers count]);
-            [self deleteOneToManyObjectsOfClass:objectsClass withForeignKey:foreignKey where:[NSString stringWithFormat:@"%@ NOT IN (%@)",[objectsClass dbPKColumn], idsPlaceholder] args:savedIdentifiers];
+            [self deleteOneToManyObjectsWithScheme:objectsScheme withForeignKey:foreignKey where:[NSString stringWithFormat:@"%@ NOT IN (%@)",[objectsScheme primaryKeyColumn], idsPlaceholder] args:savedIdentifiers];
         }
         [savedIdentifiers removeAllObjects];
-        objectsClass = nil;
+        objectsScheme = nil;
     }
 }
 
@@ -179,25 +179,31 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     for (DBTableConnection *connection in connections)
     {
         NSString *query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ?",connection.table, connection.encoderColumn];
-        NSArray *connectionDecoders = [self decodersFromSQLQuery:query withArgs:@[encoderId]];
+        NSArray *connectionDecoders = [self decodersWithScheme:nil fromSQLQuery:query withArgs:@[encoderId]];
         NSMutableDictionary *connectionDecodersDict = [[NSMutableDictionary alloc] initWithCapacity:[connectionDecoders count]];
         for (DBCoder *decoder in connectionDecoders) {
             id encodedObjectId = [decoder decodeObjectForColumn:connection.encodedObjectColumn];
             connectionDecodersDict[encodedObjectId] = decoder;
         }
-        __block Class encodedObjectClass = nil;
+        __block id<DBScheme> encodedObjectScheme = nil;
+        id<DBScheme>connectionScheme = [[connection class] scheme];
         
         [coder enumerateManyToManyCodersForConnection:connection usingBlock:^(DBCoder *connectionCoder) {
             id encodedObject = [connectionCoder decodeObjectForColumn:connection.encodedObjectColumn];
-            if (!encodedObjectClass) {
-                encodedObjectClass = [encodedObject class];
+            
+            if (!encodedObjectScheme) {
+                encodedObjectScheme = [[encodedObject class] scheme];
             }
-            id encodedObjectId = [encodedObject valueForKey:[encodedObject dbPKProperty]];
-            if (encodedObjectId != dbPrimaryKeyUndefined) {
+            
+            id encodedObjectId = [encodedObjectScheme primaryKeyValueFromObject:encodedObject];
+            
+            if (encodedObjectId) {
                 //get existing relation Id for relation with current Ids pair
                 DBCoder *existingCoder = connectionDecodersDict[encodedObjectId];
-                [connectionCoder setPrimaryKeyColumn:connection.relationPKColumn];
-                [connectionCoder setPrimaryKey:[existingCoder decodeObjectForColumn:connection.relationPKColumn]];
+                
+                NSString *primaryKeyColumn = [connectionScheme primaryKeyColumn];
+                
+                [connectionCoder encodeObject:[existingCoder decodeObjectForColumn:primaryKeyColumn] forColumn:primaryKeyColumn];
             }
             [connectionCoder encodeObject:encoderId forColumn:connection.encoderColumn];
             [self saveCoder:connectionCoder mode:DBModeAll completion:nil];
@@ -210,16 +216,14 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
         
         NSArray *connectionDecodersToDelete = [connectionDecodersDict allValues];
         for (DBCoder *decoder in connectionDecodersToDelete) {
-            id objectToDelete = [decoder decodeObjectOfClass:encodedObjectClass forColumn:connection.encodedObjectColumn];
+            id objectToDelete = [decoder decodeObjectWithScheme:encodedObjectScheme forColumn:connection.encodedObjectColumn];
             [decoder encodeObject:objectToDelete forColumn:connection.encodedObjectColumn];
-            [decoder setPrimaryKey:[decoder decodeObjectForColumn:connection.relationPKColumn]];
-            [decoder setPrimaryKeyColumn:connection.relationPKColumn];
-            [self deleteConnectionCoder:decoder withConnection:connection encoderCoder:coder];
+            [self deleteConnectionCoder:decoder withConnection:connection encoderScheme:[coder scheme]];
         }
     }
 }
 
-- (void)save:(id<DBCoding>) object withSchemeClass:(Class)objectClass mode:(DBMode) mode completion:(DBSaveCompletion)completion
+- (void)save:(id)object withScheme:(id<DBScheme>)scheme mode:(DBMode)mode completion:(DBSaveCompletion)completion
 {
     if (!object){
         NSError * error = [NSError errorWithCode:DBErrorCodeObjectIsNil description:@"Object to save can't be nil"];
@@ -227,13 +231,13 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
         return;
     }
     
-    DBCoder * coder = [[DBCoder alloc] initWithDBObject:object as:objectClass];
+    DBCoder *coder = [[DBCoder alloc] initWithObject:object scheme:scheme];
     
     [self saveCoder:coder mode:mode completion:^(BOOL wasInserted, id objectId, NSError *error) {
        
         if (wasInserted) {
-            /* Set Primary Key */
-            [self setPrimaryKey:objectId forObject:object asClass:objectClass];
+            /* Set just inserted primary key */
+            [scheme setPrimaryKeyValue:objectId forObject:object];
         }
         
         if (completion) {
@@ -257,10 +261,10 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     if (![self isExistCoder:coder]) {
         wasInserted = YES;
         NSNumber * insertedId = [self insert:coder update:NO error:&error];
-        objectId = [coder havePrimaryKey] ? [coder primaryKey] : insertedId;
+        objectId = [coder primaryKeyToEncode] ? [coder primaryKeyToEncode] : insertedId;
     } else {
         [self update:coder error:&error];
-        objectId = [coder primaryKey];
+        objectId = [coder primaryKeyToEncode];
     }
     
     if (mode & DBModeManyToMany){
@@ -347,54 +351,19 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
 {
     BOOL isExist = NO;
     
-    if (![coder connection] && [coder havePrimaryKey]){
-        id existingObject = [self objectWithId:[coder primaryKey] andClass:[coder rootObjectClass]];
-        isExist =  (existingObject != nil);
-    } else if ([coder connection] && [coder primaryKey]) {
-        DBTableConnection *connection = [coder connection];
-        NSString * query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ? LIMIT 1",connection.table, connection.relationPKColumn];
-        isExist = [[self decodersFromSQLQuery:query withArgs:@[[coder primaryKey]]] count] > 0;
+    if ([coder primaryKeyToEncode]){
+        id existingObject = [self objectWithId:[coder primaryKeyToEncode] andScheme:[coder scheme]];
+        isExist = (existingObject != nil);
     }
     
     return isExist;
 }
 
-- (BOOL) isExist:(id<DBCoding>) object{
-    
-    BOOL isExist = NO;
-    
-    id pkValue = [(NSObject *)object valueForKey:[object dbPKProperty]];
-    BOOL isCorrect = [DBCoder isCorrectPrimaryKey:pkValue];
-    
-    if (isCorrect){
-        id existObject = [self objectWithId:[(NSObject *)object valueForKey:[object dbPKProperty]] andClass:[object class]];
-        isExist =  (existObject != nil);
-    }
-    
-    return isExist;
-}
-
-- (void) setPrimaryKey:(id) key forObject:(id) object asClass:(Class) asClass{
-    NSString * pkProperty = [NSInvocation resultOfInvokingTarget:object withSelector:@selector(dbPKProperty) ofClass:asClass];
-    [(NSObject *)object setValue:key forKey:pkProperty];
-}
-
-- (id) objectOfClass:(Class) objectClass withSchemeClass:(Class) asClass fromDecoder:(DBCoder *) decoder{
-  
-    id<DBCoding> object = nil;
-    if (objectClass && decoder)
-    {
-        NSString * pkColumn = [asClass dbPKColumn];
-        id pkValue = [decoder decodeObjectForColumn:pkColumn];
-        
-        /* Set primary key for decoder */
-        [decoder setPrimaryKey:pkValue];
-        
-        /* Init with decoder */
-        object = [NSInvocation resultOfInvokingTarget:[objectClass alloc] withSelector:@selector(initWithDBCoder:) ofClass:asClass arg:decoder];
-        
-        /* Set primary key for initialized instance */
-        [self setPrimaryKey:pkValue forObject:object asClass:asClass];
+- (id)objectWithScheme:(id<DBScheme>)scheme fromDecoder:(DBCoder *)decoder
+{
+    id object = nil;
+    if (scheme && decoder) {
+        object = [scheme decodeObject:object fromCoder:decoder];
     }
     return object;
 }
@@ -403,24 +372,24 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     return [self objectOfClass:objectClass withSchemeClass:objectClass fromDecoder:decoder];
 }
 
-- (id)objectWithId:(id)identifier andClass:(Class)objectClass withSchemeClass:(Class)asClass{
-    
+- (id)objectWithId:(id)identifier andScheme:(id<DBScheme>)scheme
+{
     if (!identifier) {
-        NSLog(@"You are trying to fetch object of %@ class with nil id.",objectClass);
+        NSLog(@"You are trying to fetch object of %@ scheme with nil id.", scheme);
         return nil;
     }
     
-    NSString * table = [asClass dbTable];
-    NSString * primaryKey = [asClass dbPKColumn];
+    NSString *table = [scheme table];
+    NSString *primaryKey = [scheme primaryKeyColumn];
     
-    NSString * query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ? LIMIT 1",table,primaryKey];
+    NSString *query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ? LIMIT 1", table, primaryKey];
     
-    NSArray * decoders = [self decodersFromSQLQuery:query withArgs:@[identifier]];
+    NSArray *decoders = [self decodersWithScheme:scheme fromSQLQuery:query withArgs:@[identifier]];
     
-    id <DBCoding> object = nil;
+    id<DBCoding> object = nil;
     
     if ([decoders count] > 0){
-        object = [self objectOfClass:objectClass withSchemeClass:asClass fromDecoder:decoders[0]];
+        object = [self objectWithScheme:scheme fromDecoder:[decoders firstObject]];
     }
     
     return object;
@@ -430,8 +399,8 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     return [self objectWithId:identifier andClass:objectClass withSchemeClass:objectClass];
 }
 
-- (id) reloadObject:(id<DBCoding>) object{
-    
+- (id) reloadObject:(id<DBCoding>) object
+{
     if (!object) {
         NSLog(@"Object to reload can't be nil");
         return nil;
@@ -439,11 +408,10 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     
     id identifier = [(NSObject *)object valueForKey:[object dbPKProperty]];
     
-    return [self objectWithId:identifier andClass:[object class]];
-    
+    return [self objectWithId:identifier andScheme:[[object class] scheme]];
 }
 
-- (NSArray *)decodersFromSQLQuery:(NSString *) query withArgs:(NSArray *) args
+- (NSArray *)decodersWithScheme:(id<DBScheme>)scheme fromSQLQuery:(NSString *)query withArgs:(NSArray *) args
 {
     if (!query) {
         NSLog(@"Query to fetch decoders can't be nil");
@@ -456,7 +424,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
         FMResultSet * resultSet = [db executeQuery:query withArgumentsInArray:args];
 
         while ([resultSet next]) {
-            DBCoder * decoder = [[DBCoder alloc] initWithResultSet:resultSet dbService:self];
+            DBCoder * decoder = [[DBCoder alloc] initWithResultSet:resultSet scheme:scheme dbService:self];
             [resultArray addObject:decoder];
         }
         
@@ -466,49 +434,43 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     return resultArray;
 }
 
-- (NSArray *)objectsOfClass:(Class)objectClass fromSQLQuery:(NSString *)query withArgs:(NSArray *)args
+- (NSArray *)objectsWithScheme:(id<DBScheme>)scheme fromSQLQuery:(NSString *)query withArgs:(NSArray *)args;
 {
-    if (![objectClass conformsToProtocol:@protocol(DBCoding)]) {
-        NSLog(@"You trying to fetch objects of class whicn not confirms DBCoding");
-        return nil;
-    }
+    NSParameterAssert(scheme);
     
-    NSArray *decoders = [self decodersFromSQLQuery:query withArgs:args];
+    NSArray *decoders = [self decodersWithScheme:scheme fromSQLQuery:query withArgs:args];
     NSMutableArray *objects = [[NSMutableArray alloc] initWithCapacity:[decoders count]];
     for (DBCoder *decoder in decoders) {
-        id object = [self objectOfClass:objectClass fromDecoder:decoder];
+        id object = [self objectWithScheme:scheme fromDecoder:decoder];
         [objects addObject:object];
     }
     return objects;
 }
 
-- (id)latestPrimaryKeyForClass:(Class)objectClass
+- (id)latestPrimaryKeyForScheme:(id<DBScheme>)scheme;
 {
-    id primaryKey = nil;
+    __block id primaryKey = nil;
     
-    NSString * primaryKeyColumn = [objectClass dbPKColumn];
-    NSString * tableName = [objectClass dbTable];
-    NSString * query = [NSString stringWithFormat:@"SELECT %@ from %@ ORDER BY %@ DESC LIMIT 1",primaryKeyColumn,tableName,primaryKeyColumn];
-    NSArray * decoders = [self decodersFromSQLQuery:query withArgs:nil];
-    if (decoders.count > 0){
-        primaryKey = [decoders[0] decodeObjectForColumn:primaryKeyColumn];
-    }
+    NSString *query = [NSString stringWithFormat:@"SELECT %@ from %@ ORDER BY %@ DESC LIMIT 1",[scheme primaryKeyColumn],[scheme table],[scheme primaryKeyColumn]];
+    [self performBlock:^(FMDatabase *db) {
+        FMResultSet *resultSet = [db executeQuery:query];
+        primaryKey = [resultSet objectForColumnName:[scheme primaryKeyColumn]];
+    }];
     
     return primaryKey;
 }
 
-- (void)deleteConnectionCoder:(DBCoder *)coder withConnection:(DBTableConnection *)connection encoderCoder:(DBCoder *)parentCoder
+- (void)deleteConnectionCoder:(DBCoder *)coder withConnection:(DBTableConnection *)connection encoderScheme:(id<DBScheme>)parentScheme
 {
-    [coder enumerateOneToOneRelatedObjects:^id(id<DBCoding> object, __unsafe_unretained Class objectClass, NSString *column) {
-        if ([self shouldDeleteObjectWithClass:[object class] forConnection:connection onEncoderClass:[parentCoder rootObjectClass]]) {
-            DBCoder *relatedCoder = [[DBCoder alloc] initWithDBObject:object as:objectClass];
+    [coder enumerateOneToOneRelatedObjects:^id(id object, id<DBScheme> scheme, NSString *column) {
+        if ([parentScheme deleteRuleForManyToManyRelatedObjectWithScheme:scheme andConnection:connection] == DBSchemeDeleteRuleCascade) {
+            DBCoder *relatedCoder = [[DBCoder alloc] initWithObject:object scheme:scheme];
             NSError *error;
             [self delete:relatedCoder error:&error];
         }
         return nil;
     }];
 
-    [coder setTable:connection.table];
     [coder deleteStatement:^(NSString *query, NSArray *args) {
         BOOL success = NO;
         if (query && args){
@@ -521,27 +483,28 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
 {
     //Remove arrays of objects which refers to current via connection table
     [coder enumerateManyToManyRelationCoders:^(DBCoder *connection_coder, DBTableConnection *connection) {
-        if ([self shouldDeleteConnection:connection forClass:[coder rootObjectClass]]) {
-            [connection_coder setPrimaryKey:[coder primaryKey]];
-            [connection_coder setPrimaryKeyColumn:connection.encoderColumn];
-            [self deleteConnectionCoder:connection_coder withConnection:connection encoderCoder:coder];
-        } else {
-            NSLog(@"will not delete connection!");
-        }
+//        if ([self shouldDeleteConnection:connection forClass:[coder rootObjectClass]]) {
+//            [connection_coder setPrimaryKey:[coder primaryKey]];
+//            [connection_coder setPrimaryKeyColumn:connection.encoderColumn];
+//            [self deleteConnectionCoder:connection_coder withConnection:connection encoderCoder:coder];
+//        } else {
+//            NSLog(@"will not delete connection!");
+//        }
     }];
     
     //Remove arrays of objects which refers to current
-    [coder enumerateOneToManyRelatedObjects:^(id<DBCoding> object, NSString *foreignKey) {
-        if ([self shouldDeleteOneToManyObjectWithClass:[object class] forForeignColumn:foreignKey]) {
-            DBCoder *foreignCoder = [[DBCoder alloc] initWithDBObject:object as:[object class]];
+    [coder enumerateOneToManyRelatedObjects:^(id object, id<DBScheme> scheme, NSString *foreignKey) {
+        if ([[coder scheme] deleteRuleForOneToManyRelatedObjectWithScheme:scheme connectedOnForeignColumn:foreignKey] == DBSchemeDeleteRuleCascade) {
+            DBCoder *foreignCoder = [[DBCoder alloc] initWithObject:object scheme:scheme];
             [self delete:foreignCoder error:error];
+
         }
     }];
     
     //Remove object that refers to current
-    [coder enumerateOneToOneRelatedObjects:^id(id<DBCoding> object, __unsafe_unretained Class objectClass, NSString *column) {
-        if ([self shouldDeleteObjectWithClass:[object class] withClass:objectClass forColumn:column]) {
-            DBCoder *relatedCoder = [[DBCoder alloc] initWithDBObject:object as:objectClass];
+    [coder enumerateOneToOneRelatedObjects:^id(id object, id<DBScheme> scheme, NSString *column) {
+        if ([[coder scheme] deleteRuleForOneToOneRelatedObjectWithScheme:scheme forColumn:column] == DBSchemeDeleteRuleCascade) {
+            DBCoder *relatedCoder = [[DBCoder alloc] initWithObject:object scheme:scheme];
             [self delete:relatedCoder error:error];
         }
         return nil;
@@ -562,12 +525,12 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     }
 }
 
-- (void)deleteObject:(id<DBCoding>)object withSchemeClass:(Class)schemeClass completion:(DBDeleteCompletion)completion
+- (void)deleteObject:(id)object withScheme:(id<DBScheme>)scheme completion:(DBDeleteCompletion)completion
 {
     NSError *error = nil;
     
     if (object) {
-        DBCoder *coder = [[DBCoder alloc] initWithDBObject:object as:schemeClass];
+        DBCoder *coder = [[DBCoder alloc] initWithObject:object scheme:scheme];
         if ([self isExistCoder:coder]) {
             [self delete:coder error:&error];
         } else {
@@ -582,72 +545,19 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     }
 }
 
-- (void)deleteObject:(id<DBCoding>) object completion:(DBDeleteCompletion) completion
+- (void)deleteObject:(id<DBCoding>)object completion:(DBDeleteCompletion) completion
 {
-    [self deleteObject:object withSchemeClass:[object class] completion:completion];
+    [self deleteObject:object withScheme:[[object class] scheme] completion:completion];
 }
 
-- (void)deleteOneToManyObjectsOfClass:(Class<DBCoding>)objectClass withForeignKey:(NSString *)foreignKey where:(NSString *)whereQuery args:(NSArray *)args
+- (void)deleteOneToManyObjectsWithScheme:(id<DBScheme>)scheme withForeignKey:(NSString *)foreignKey where:(NSString *)whereQuery args:(NSArray *)args
 {
-    if ([self shouldDeleteOneToManyObjectWithClass:objectClass forForeignColumn:foreignKey]) {
-        NSString *selectQuery = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@",[objectClass dbTable], whereQuery];
-        NSArray *decoders = [self decodersFromSQLQuery:selectQuery withArgs:args];
-        for (DBCoder *decoder in decoders) {
-            NSError *error = nil;
-            [decoder setTable:[objectClass dbTable]];
-            [decoder setPrimaryKeyColumn:[objectClass dbPKColumn]];
-            [decoder setPrimaryKey:[decoder decodeObjectForColumn:[objectClass dbPKColumn]]];
-            [decoder setRootObjectClass:objectClass];
-            
-            [self delete:decoder error:&error];
-        }
+    NSString *selectQuery = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@",[scheme table], whereQuery];
+    NSArray *decoders = [self decodersWithScheme:scheme fromSQLQuery:selectQuery withArgs:args];
+    for (DBCoder *decoder in decoders) {
+        NSError *error = nil;        
+        [self delete:decoder error:&error];
     }
-}
-
-#pragma mark -
-
-- (BOOL)shouldDeleteObjectWithClass:(Class)objectClass withClass:(Class)class forColumn:(NSString *)column
-{
-    BOOL shouldDelete = YES;
-
-    SEL selector = @selector(dbShouldDeleteOneToOneRelatedObjectWithClass:forColumn:);
-    if ([class respondsToSelector:selector]) {
-        shouldDelete = [NSInvocation boolOfInvokingTarget:class withSelector:selector ofClass:class arg:objectClass arg:column];
-    }
-    return shouldDelete;
-}
-
-- (BOOL)shouldDeleteOneToManyObjectWithClass:(Class)objectClass forForeignColumn:(NSString *)column
-{
-    BOOL shouldDelete = YES;
-    
-    SEL selector = @selector(dbShouldDeleteOneToManyRelatedObjectWithClass:connectedOnForeignColumn:);
-    if ([objectClass respondsToSelector:selector]) {
-        shouldDelete = [NSInvocation boolOfInvokingTarget:objectClass withSelector:selector ofClass:objectClass arg:objectClass arg:column];
-    }
-    return shouldDelete;
-}
-
-- (BOOL)shouldDeleteConnection:(DBTableConnection *)connection forClass:(Class)objectClass
-{
-    BOOL shouldDelete = YES;
-    
-    SEL selector = @selector(dbShouldDeleteManyToManyRelationWithConnection:);
-    if ([objectClass respondsToSelector:selector]) {
-        shouldDelete = [NSInvocation boolOfInvokingTarget:objectClass withSelector:selector ofClass:objectClass arg:connection];
-    }
-    return shouldDelete;
-}
-
-- (BOOL)shouldDeleteObjectWithClass:(Class)objectClass forConnection:(DBTableConnection *)connection onEncoderClass:(Class)encoderClass
-{
-    BOOL shouldDelete = NO;
-
-    SEL selector = @selector(dbShouldDeleteManyToManyRelatedObjectWithClass:withConnection:);
-    if ([encoderClass respondsToSelector:selector]) {
-        shouldDelete = [NSInvocation boolOfInvokingTarget:encoderClass withSelector:selector ofClass:encoderClass arg:objectClass arg:connection];
-    }
-    return shouldDelete;
 }
 
 @end

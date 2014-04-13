@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol DBScheme;
 @class DBCoder;
 @class DBTableConnection;
 
@@ -24,19 +25,21 @@
 + (NSString *)dbTable;      // table name for object
 + (NSString *)dbPKColumn;   // primary key column name
 
++ (NSString *)dbParentColumn;
+
 @optional
 
 /** Default: YES */
-+ (BOOL)dbShouldDeleteOneToOneRelatedObjectWithClass:(Class)objectClass forColumn:(NSString *)column;
++ (BOOL)dbShouldDeleteOneToOneRelatedObjectWithScheme:(id<DBScheme>)scheme forColumn:(NSString *)column;
 
 /** Default: YES */
-+ (BOOL)dbShouldDeleteOneToManyRelatedObjectWithClass:(Class)objectClass connectedOnForeignColumn:(NSString *)foreignColumn;
++ (BOOL)dbShouldDeleteOneToManyRelatedObjectWithScheme:(id<DBScheme>)scheme connectedOnForeignColumn:(NSString *)foreignColumn;
 
 /** Default: YES */
 + (BOOL)dbShouldDeleteManyToManyRelationWithConnection:(DBTableConnection *)connection;
 
 /** Default: NO */
-+ (BOOL)dbShouldDeleteManyToManyRelatedObjectWithClass:(Class)objectClass withConnection:(DBTableConnection *)connection;
++ (BOOL)dbShouldDeleteManyToManyRelatedObjectWithScheme:(id<DBScheme>)scheme withConnection:(DBTableConnection *)connection;
 
 @end
 

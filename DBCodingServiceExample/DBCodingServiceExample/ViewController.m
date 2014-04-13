@@ -71,7 +71,7 @@
     
     [service save:message completion:nil];
     
-    Message *message2 = [service objectWithId:@(message.messageId) andClass:[Message class]];
+    Message *message2 = [service objectWithId:@(message.messageId) andScheme:[Message scheme]];
     Attachment *atach = [message2.attachments lastObject];
     message2.attachments = @[atach];
     
@@ -111,7 +111,7 @@
     
     [service save:message completion:nil];
     
-    Message *message2 = [service objectWithId:@(message.messageId) andClass:[Message class]];
+    Message *message2 = [service objectWithId:@(message.messageId) andScheme:[Message scheme]];
     
     NSAssert([message2.attachments count] == 1, nil);
     Attachment *attachment2 = [[message2 attachments] lastObject];

@@ -8,11 +8,12 @@
 
 #import "DBCoderData.h"
 #import "DBTableConnection.h"
+#import "NSObject+DBScheme.h"
 
 @interface DBCoderDataValue : NSObject
 
 @property (nonatomic, strong) id value;
-@property (nonatomic) Class valueClass;
+@property (nonatomic) id<DBScheme> scheme;
 
 @end
 
@@ -65,10 +66,10 @@
     return valuesForColumns[column];
 }
 
-- (Class)valueClassForColumn:(NSString *)column
+- (id<DBScheme>)valueSchemeForColumn:(NSString *)column
 {
     DBCoderDataValue *value = [self dataValueForColumn:column];
-    return value.valueClass ? value.valueClass : [value.value class];
+    return value.scheme ? value.scheme : [[value.value class] scheme];
 }
 
 - (id)valueForColumn:(NSString *)column
@@ -77,12 +78,12 @@
     return value.value;
 }
 
-- (void)setObject:(id)object withClass:(Class)objectClass forColumn:(NSString *)column
+- (void)setObject:(id)object withScheme:(id<DBScheme>)scheme forColumn:(NSString *)column
 {
     if (object && column && ![ignoredColumns containsObject:column]) {
         DBCoderDataValue *value = [DBCoderDataValue new];
         value.value = object;
-        value.valueClass = objectClass;
+        value.scheme = scheme;
         valuesForColumns[column] = value;
     }
 }
@@ -92,10 +93,13 @@
     [valuesForColumns removeObjectForKey:column];
 }
 
-- (void)setObjects:(NSArray *)objects withForeignKey:(NSString *)key
+- (void)setObjects:(NSArray *)objects withScheme:(id<DBScheme>)scheme withForeignKey:(NSString *)key
 {
     if (objects && key) {
-        oneToManyValues[key] = objects;
+        DBCoderDataValue *value = [DBCoderDataValue new];
+        value.value = objects;
+        value.scheme = scheme;
+        oneToManyValues[key] = value;
     }
 }
 
@@ -127,11 +131,11 @@
     return [oneToManyValues allKeys];
 }
 
-- (void)enumerateOneToManyObjectsForKey:(NSString *)foreigKey usingBlock:(void(^)(id value))enumerationBlock
+- (void)enumerateOneToManyObjectsForKey:(NSString *)foreigKey usingBlock:(void(^)(id value, id<DBScheme>scheme))enumerationBlock
 {
     NSArray *values = oneToManyValues[foreigKey];
-    for (id value in values) {
-        enumerationBlock(value);
+    for (DBCoderDataValue *value in values) {
+        enumerationBlock(value.value, value.scheme);
     }
 }
 

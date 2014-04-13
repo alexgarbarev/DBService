@@ -122,10 +122,10 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
 - (void)replaceObjectsByIdsInCoder:(DBCoder *)coder
 {
     //replace all db object with it's ids
-    [coder enumerateOneToOneRelatedObjects:^id(id<DBCoding> object, Class objectClass, NSString *column) {
+    [coder enumerateOneToOneRelatedObjects:^id(id object, id<DBScheme> scheme, NSString *column) {
         __block id insertedId = nil;
         
-        [self save:object withSchemeClass:objectClass completion:^(BOOL wasInserted, id objectId, NSError *error) {
+        [self save:object withScheme:scheme mode:DBModeAll completion:^(BOOL wasInserted, id objectId, NSError *error) {
             insertedId = objectId;
             if (error){
                 NSLog(@"%@",[error localizedDescription]);
@@ -214,11 +214,14 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
             }
         }];
         
-        NSArray *connectionDecodersToDelete = [connectionDecodersDict allValues];
-        for (DBCoder *decoder in connectionDecodersToDelete) {
-            id objectToDelete = [decoder decodeObjectWithScheme:encodedObjectScheme forColumn:connection.encodedObjectColumn];
-            [decoder encodeObject:objectToDelete forColumn:connection.encodedObjectColumn];
-            [self deleteConnectionCoder:decoder withConnection:connection encoderScheme:[coder scheme]];
+        if ([[coder scheme] deleteRuleForManyToManyRelationWithConnection:connection] == DBSchemeDeleteRuleCascade) {
+            NSArray *connectionDecodersToDelete = [connectionDecodersDict allValues];
+            for (DBCoder *connectionCoder in connectionDecodersToDelete) {
+                [[connectionCoder scheme] setParentScheme:[coder scheme]];
+                id objectToDelete = [connectionCoder decodeObjectWithScheme:encodedObjectScheme forColumn:connection.encodedObjectColumn];
+                [connectionCoder encodeObject:objectToDelete forColumn:connection.encodedObjectColumn];
+                [self delete:connectionCoder error:nil];
+            }
         }
     }
 }
@@ -279,12 +282,9 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     }
 }
 
-- (void) save:(id<DBCoding>) object withSchemeClass:(Class)objectClass completion:(DBSaveCompletion)completion{
-    [self save:object withSchemeClass:objectClass mode:DBModeAll completion:completion];
-}
 
 - (void) save:(id<DBCoding>) object completion:(DBSaveCompletion)completion{
-    [self save:object withSchemeClass:[object class] mode:DBModeAll completion:completion];
+    [self save:object withScheme:[[object class] scheme] mode:DBModeAll completion:completion];
 }
 
 - (NSNumber *) insert:(DBCoder *) coder update:(BOOL) shouldUpdate error:(NSError **) error{
@@ -395,9 +395,6 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     return object;
 }
 
-- (id) objectWithId:(id) identifier andClass:(Class) objectClass{
-    return [self objectWithId:identifier andClass:objectClass withSchemeClass:objectClass];
-}
 
 - (id) reloadObject:(id<DBCoding>) object
 {
@@ -460,36 +457,16 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     return primaryKey;
 }
 
-- (void)deleteConnectionCoder:(DBCoder *)coder withConnection:(DBTableConnection *)connection encoderScheme:(id<DBScheme>)parentScheme
-{
-    [coder enumerateOneToOneRelatedObjects:^id(id object, id<DBScheme> scheme, NSString *column) {
-        if ([parentScheme deleteRuleForManyToManyRelatedObjectWithScheme:scheme andConnection:connection] == DBSchemeDeleteRuleCascade) {
-            DBCoder *relatedCoder = [[DBCoder alloc] initWithObject:object scheme:scheme];
-            NSError *error;
-            [self delete:relatedCoder error:&error];
-        }
-        return nil;
-    }];
-
-    [coder deleteStatement:^(NSString *query, NSArray *args) {
-        BOOL success = NO;
-        if (query && args){
-            success = [self executeUpdate:query withArgumentsInArray:args];
-        }
-    }];
-}
-
-- (void)delete:(DBCoder *)coder error:(NSError **)error
+- (void)delete:(DBCoder *)coder error:(NSError **)error where:(NSString *)whereQuery args:(NSArray *)arguments
 {
     //Remove arrays of objects which refers to current via connection table
     [coder enumerateManyToManyRelationCoders:^(DBCoder *connection_coder, DBTableConnection *connection) {
-//        if ([self shouldDeleteConnection:connection forClass:[coder rootObjectClass]]) {
-//            [connection_coder setPrimaryKey:[coder primaryKey]];
-//            [connection_coder setPrimaryKeyColumn:connection.encoderColumn];
-//            [self deleteConnectionCoder:connection_coder withConnection:connection encoderCoder:coder];
-//        } else {
-//            NSLog(@"will not delete connection!");
-//        }
+        if ([[coder scheme] deleteRuleForManyToManyRelationWithConnection:connection] == DBSchemeDeleteRuleCascade) {
+            [[connection_coder scheme] setParentScheme:[coder scheme]];
+            NSString *query = [NSString stringWithFormat:@"WHERE %@ IS ?",connection.encoderColumn];
+            NSArray *args = @[[coder decodeObjectForColumn:[[coder scheme] primaryKeyColumn]]];
+            [self delete:connection_coder error:error where:query args:args];
+        }
     }];
     
     //Remove arrays of objects which refers to current
@@ -497,7 +474,6 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
         if ([[coder scheme] deleteRuleForOneToManyRelatedObjectWithScheme:scheme connectedOnForeignColumn:foreignKey] == DBSchemeDeleteRuleCascade) {
             DBCoder *foreignCoder = [[DBCoder alloc] initWithObject:object scheme:scheme];
             [self delete:foreignCoder error:error];
-
         }
     }];
     
@@ -510,19 +486,25 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
         return nil;
     }];
     
-    if (!*error){
-        [coder deleteStatement:^(NSString *query, NSArray *args) {
-            BOOL success = NO;
-            
-            if (query && args){
-                success = [self executeUpdate:query withArgumentsInArray:args];
-            }
-            
-            if (error && !success){
-                [self setupDBError:error action:@"deleting from db"];
-            }
-        }];
+    if (!error || !*error) {
+        
+        NSString *table = [[coder scheme] table];
+        
+        NSString *query = [NSString stringWithFormat:@"DELETE FROM %@ %@",table, whereQuery];
+        
+        BOOL success = [self executeUpdate:query withArgumentsInArray:arguments];
+        
+        if (error && !success){
+            [self setupDBError:error action:@"deleting from db"];
+        }
+        
     }
+}
+
+- (void)delete:(DBCoder *)coder error:(NSError **)error
+{
+    id primaryKeyValue = [[coder scheme] primaryKeyColumn];
+    [self delete:coder error:error where:[NSString stringWithFormat:@"WHERE %@ = ?",primaryKeyValue]  args:@[[coder decodeObjectForColumn:primaryKeyValue]]];
 }
 
 - (void)deleteObject:(id)object withScheme:(id<DBScheme>)scheme completion:(DBDeleteCompletion)completion

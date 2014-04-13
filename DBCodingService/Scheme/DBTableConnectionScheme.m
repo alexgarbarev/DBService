@@ -70,7 +70,7 @@
 
 - (DBSchemeDeleteRule)deleteRuleForOneToOneRelatedObjectWithScheme:(id<DBScheme>)scheme forColumn:(NSString *)column
 {
-    return DBSchemeDeleteRuleNoAction;
+    return [self.parentScheme deleteRuleForManyToManyRelatedObjectWithScheme:scheme andConnection:connection];
 }
 
 - (DBSchemeDeleteRule)deleteRuleForOneToManyRelatedObjectWithScheme:(id<DBScheme>)scheme connectedOnForeignColumn:(NSString *)foreignColumn

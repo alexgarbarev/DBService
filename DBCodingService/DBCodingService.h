@@ -47,19 +47,10 @@ typedef enum { DBErrorCodeObjectIsNil = 100, DBErrorCodeObjectIsNotExist, DBErro
 /** Save object (and it's dependencies) synchronically using its class as scheme (Class must conforms to DBCoding protocol) */
 - (void)save:(id<DBCoding>)object completion:(DBSaveCompletion)completion;
 
-/** Save object (and it's dependecies) synchronically using specified schemeClass (schemeClass must conforms to DBCoding protocol) */
-- (void)save:(id<DBCoding>)object withSchemeClass:(Class)schemeClass completion:(DBSaveCompletion)completion;
-
-/** Save object synchronically and dependecies specified by mode using specified schemeClass */
-- (void)save:(id<DBCoding>)object withSchemeClass:(Class)schemeClass mode:(DBMode)mode completion:(DBSaveCompletion)completion;
+/** Save object synchronically and dependecies specified by mode using specified scheme */
+- (void)save:(id)object withScheme:(id<DBScheme>)scheme mode:(DBMode)mode completion:(DBSaveCompletion)completion;
 
 #pragma mark - Queries
-
-/** Fetch object with specified primaryKey and given objectClass (must conform DBCoding protocol) */
-- (id)objectWithId:(id)identifier andClass:(Class)objectClass UNAVAILABLE_ATTRIBUTE;
-
-/** Fetch object with specified primaryKey, class for instance creation and schemeClass (which must conform DBCoding protocol) */
-- (id)objectWithId:(id)identifier andClass:(Class)objectClass withSchemeClass:(Class)schemeClass UNAVAILABLE_ATTRIBUTE;
 
 /** Fetch object with specified primaryKey and scheme */
 - (id)objectWithId:(id)identifier andScheme:(id<DBScheme>)scheme;

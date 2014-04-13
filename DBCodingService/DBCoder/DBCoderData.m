@@ -133,9 +133,9 @@
 
 - (void)enumerateOneToManyObjectsForKey:(NSString *)foreigKey usingBlock:(void(^)(id value, id<DBScheme>scheme))enumerationBlock
 {
-    NSArray *values = oneToManyValues[foreigKey];
-    for (DBCoderDataValue *value in values) {
-        enumerationBlock(value.value, value.scheme);
+    DBCoderDataValue *dataValue = oneToManyValues[foreigKey];
+    for (NSArray *value in dataValue.value) {
+        enumerationBlock(value, dataValue.scheme);
     }
 }
 

@@ -73,7 +73,7 @@
     if (self.parentScheme) {
         [encoder encodeObject:object withScheme:self.parentScheme forColumn:[self parentSchemeColumn]];
     }
-    [NSInvocation invokeTarget:object withSelector:@selector(encodeWithDBCoder:) ofClass:codingClass];
+    [NSInvocation invokeTarget:object withSelector:@selector(encodeWithDBCoder:) ofClass:codingClass arg:encoder];
     
     [encoder encodeObject:[self primaryKeyValueFromObject:object] forColumn:[self primaryKeyColumn]];
 }
@@ -168,6 +168,11 @@
         rule = DBSchemeDeleteRuleCascade;
     }
     return rule;
+}
+
+- (NSString *)description
+{
+    return [[super description] stringByAppendingFormat:@"Coding-class=%@",codingClass];
 }
 
 @end

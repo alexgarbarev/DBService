@@ -93,7 +93,7 @@
 {
     NSString * query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ?", connection.table, connection.encoderColumn];
     
-    id primaryKey = [scheme primaryKeyValueFromObject:encodingObject];
+    id primaryKey = [self decodeObjectForColumn:[scheme primaryKeyColumn]];
     
     NSArray * decoders = [decodingService decodersWithScheme:nil fromSQLQuery:query withArgs:@[primaryKey]];
     
@@ -119,13 +119,13 @@
         return nil;
     }
     
-    id primaryKey = [scheme primaryKeyValueFromObject:encodingObject];
+    id primaryKey = [self decodeObjectForColumn:[scheme primaryKeyColumn]];
     if (!primaryKey) {
         NSLog(@"You are trying to fetch objects of %@ scheme when foreign key (%@) refers to nil",_scheme, foreignKeyColumn);
         return nil;
     }
 
-    NSString *foreignTable = [scheme table];
+    NSString *foreignTable = [_scheme table];
     
     NSString *query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ?", foreignTable, foreignKeyColumn];
     
@@ -197,7 +197,7 @@
         shouldSkipZeroValues = YES;
         
         /* Ignoring primary key encoding, since we access to primaryKey property directly (ignoring to avoid duplicating) */
-        data = [[DBCoderData alloc] initWithEncodingIgnoredColumns:@[[scheme primaryKeyColumn]]];
+        data = [[DBCoderData alloc] initWithEncodingIgnoredColumns:@[]];
 
         [scheme encodeObject:object withCoder:self];
     }

@@ -10,6 +10,7 @@
 
 #import "DBTableConnection.h"
 #import "DBCoding.h"
+#import "DBScheme.h"
 
 @protocol DBScheme;
 @class DBCoder;

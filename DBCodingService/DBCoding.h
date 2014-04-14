@@ -25,9 +25,9 @@
 + (NSString *)dbTable;      // table name for object
 + (NSString *)dbPKColumn;   // primary key column name
 
-+ (NSString *)dbParentColumn;
-
 @optional
+
++ (NSString *)dbParentColumn;
 
 /** Default: YES */
 + (BOOL)dbShouldDeleteOneToOneRelatedObjectWithScheme:(id<DBScheme>)scheme forColumn:(NSString *)column;

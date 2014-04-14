@@ -78,8 +78,10 @@
 {
     NSAssert(![encodingObject isKindOfClass:[DBTableConnection class]], @"One-To-Many relations not supported for connection-table encoders");
     id<DBScheme>_scheme = [[[objects firstObject] class] scheme];
-    NSParameterAssert(_scheme);
-    [data setObjects:objects withScheme:_scheme withForeignKey:foreignKeyColumn];
+    if ([objects count] > 0) {
+        NSParameterAssert(_scheme);
+        [data setObjects:objects withScheme:_scheme withForeignKey:foreignKeyColumn];
+    }
 }
 
 #pragma mark - Decoding
@@ -105,8 +107,12 @@
 - (id)decodeObjectWithScheme:(id<DBScheme>)_scheme forColumn:(NSString *)column
 {
     if (_scheme) {
-        id objectId = [self decodeObjectForColumn:[_scheme primaryKeyColumn]];
-        return [decodingService objectWithId:objectId andScheme:_scheme];
+        id objectId = [self decodeObjectForColumn:column];
+        if (objectId) {
+            return [decodingService objectWithId:objectId andScheme:_scheme];
+        } else {
+            return nil;
+        }
     } else {
         return [self decodeObjectForColumn:column];
     }

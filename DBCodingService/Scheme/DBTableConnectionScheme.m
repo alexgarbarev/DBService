@@ -31,7 +31,7 @@
 
 - (id)decodeObject:(id)object fromCoder:(DBCoder *)decoder
 {
-    return nil;
+    return decoder;
 }
 
 - (NSString *)primaryKeyColumn
@@ -41,7 +41,7 @@
 
 - (id)primaryKeyValueFromObject:(id)object
 {
-    
+    return nil;
 }
 
 - (void)setPrimaryKeyValue:(id)primaryKey forObject:(id)object

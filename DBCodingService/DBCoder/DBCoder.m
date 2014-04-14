@@ -160,7 +160,6 @@
         data = [[DBCoderData alloc] init];
         scheme = [[DBTableConnectionScheme alloc] initWithTableConnection:connection];
         shouldSkipZeroValues = YES;
-        encodingObject = connection;
     }
     return self;
 }
@@ -208,7 +207,11 @@
 
 - (id)primaryKeyToEncode
 {
-    return [scheme primaryKeyValueFromObject:encodingObject];
+    if (encodingObject) {
+        return [scheme primaryKeyValueFromObject:encodingObject];
+    } else {
+        return [self decodeObjectForColumn:[scheme primaryKeyColumn]];
+    }
 }
 
 - (BOOL) shouldSkipObject:(id)object{
@@ -258,7 +261,7 @@
     }
     
     [query appendFormat:@" WHERE %@ = ?;",[scheme primaryKeyColumn]];
-    [arguments addObject:[scheme primaryKeyValueFromObject:encodingObject]];
+    [arguments addObject:[self primaryKeyToEncode]];
     
     if (statement) statement(query, arguments);
 }
@@ -267,7 +270,7 @@
 
 - (void)deleteStatement:(void(^)(NSString * query, NSArray * args)) statement
 {
-    id primaryKey = [scheme primaryKeyValueFromObject:encodingObject];
+    id primaryKey = [self primaryKeyToEncode];
     
     NSString *query;
     NSArray *arguments;

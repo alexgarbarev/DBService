@@ -14,6 +14,8 @@
 #import "FMDatabaseQueue.h"
 #import "DBCoding.h"
 
+#import "DBTableConnectionScheme.h"
+
 @interface NSError(NSError_Shortcuts)
 
 + (NSError *) errorWithCode:(NSInteger) code description:(NSString *) description;
@@ -176,17 +178,19 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
 {
     NSArray *connections = [coder allManyToManyConnections];
     
+    
     for (DBTableConnection *connection in connections)
     {
+        id<DBScheme>connectionScheme = [[DBTableConnectionScheme alloc] initWithTableConnection:connection];
+
         NSString *query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ?",connection.table, connection.encoderColumn];
-        NSArray *connectionDecoders = [self decodersWithScheme:nil fromSQLQuery:query withArgs:@[encoderId]];
+        NSArray *connectionDecoders = [self decodersWithScheme:connectionScheme fromSQLQuery:query withArgs:@[encoderId]];
         NSMutableDictionary *connectionDecodersDict = [[NSMutableDictionary alloc] initWithCapacity:[connectionDecoders count]];
         for (DBCoder *decoder in connectionDecoders) {
             id encodedObjectId = [decoder decodeObjectForColumn:connection.encodedObjectColumn];
             connectionDecodersDict[encodedObjectId] = decoder;
         }
         __block id<DBScheme> encodedObjectScheme = nil;
-        id<DBScheme>connectionScheme = [[connection class] scheme];
         
         [coder enumerateManyToManyCodersForConnection:connection usingBlock:^(DBCoder *connectionCoder) {
             id encodedObject = [connectionCoder decodeObjectForColumn:connection.encodedObjectColumn];
@@ -504,7 +508,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
 - (void)delete:(DBCoder *)coder error:(NSError **)error
 {
     id primaryKeyValue = [[coder scheme] primaryKeyColumn];
-    [self delete:coder error:error where:[NSString stringWithFormat:@"WHERE %@ = ?",primaryKeyValue]  args:@[[coder decodeObjectForColumn:primaryKeyValue]]];
+    [self delete:coder error:error where:[NSString stringWithFormat:@"WHERE %@ = ?",primaryKeyValue]  args:@[[coder primaryKeyToEncode]]];
 }
 
 - (void)deleteObject:(id)object withScheme:(id<DBScheme>)scheme completion:(DBDeleteCompletion)completion

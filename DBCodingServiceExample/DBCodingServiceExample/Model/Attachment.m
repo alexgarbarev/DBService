@@ -65,9 +65,9 @@
     return @"attachment";
 }
 
-+ (BOOL)dbShouldDeleteManyToManyRelatedObjectWithClass:(id)object withConnection:(DBTableConnection *)connection
++ (BOOL)dbShouldDeleteManyToManyRelatedObjectWithScheme:(id<DBScheme>)scheme withConnection:(DBTableConnection *)connection
 {
-    return [object isKindOfClass:[File class]];
+    return [[scheme table] isEqualToString:@"file"];
 }
 
 

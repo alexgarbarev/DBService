@@ -120,10 +120,11 @@
         [self updateObject:object withEntity:entity error:&error];
     } else {
         id insertedId = [self insertObject:object withEntity:entity tryReplace:NO error:&error];
-        if ([self isEmptyPrimaryKey:objectId]) {
+        if ([self.queryBuilder isEmptyPrimaryKey:objectId] && insertedId) {
             objectId = insertedId;
             [object setValue:objectId forKey:entity.primary.property];
         }
+        wasInserted = YES;
     }
     //3. Save one-to-many
     //4. Save many-to-many related objects
@@ -197,20 +198,13 @@
 
 #pragma mark - Requests
 
-- (BOOL)isEmptyPrimaryKey:(id)primaryKey
-{
-    return primaryKey == nil
-    || ([primaryKey isKindOfClass:[NSNumber class]] && [primaryKey integerValue] == 0)
-    || ([primaryKey isKindOfClass:[NSString class]] && [primaryKey length] == 0);
-}
-
 - (BOOL)isExistsObject:(id)object withEntity:(DBEntity *)entity
 {
     __block BOOL exist = NO;
     
     id primaryKeyValue = [object valueForKey:entity.primary.property];
     
-    if (![self isEmptyPrimaryKey:primaryKeyValue]) {
+    if (![self.queryBuilder isEmptyPrimaryKey:primaryKeyValue]) {
         [self executeBlock:^(FMDatabase *db) {
             DBQuery query = [self.queryBuilder queryToSelectEntity:entity withPrimaryKey:primaryKeyValue];
             FMResultSet *result = [db executeQuery:query.query withArgumentsInArray:query.args];

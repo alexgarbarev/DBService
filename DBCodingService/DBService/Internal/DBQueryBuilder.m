@@ -26,7 +26,7 @@
     NSMutableArray *args = [NSMutableArray array];
     
     [self enumerateColumnsInObject:object withEntity:entity excluding:nil withBlock:^(id value, NSString *column, NSUInteger index) {
-        NSString *comma = (column == 0) ? @"" : @", ";
+        NSString *comma = (index == 0) ? @"" : @", ";
         [query appendFormat:@"%@%@", comma, column];
         [args addObject:value];
     }];
@@ -48,7 +48,7 @@
 
 - (DBQuery)queryToUpdateObject:(id)object withEntity:(DBEntity *)entity
 {
-    NSMutableString *query = [NSMutableString stringWithFormat:@"UPDATE %@ SET", [entity table]];
+    NSMutableString *query = [NSMutableString stringWithFormat:@"UPDATE %@ SET ", [entity table]];
     NSMutableArray *args = [NSMutableArray array];
 
     [self enumerateColumnsInObject:object withEntity:entity excluding:[NSSet setWithObject:entity.primary.column] withBlock:^(id value, NSString *column, NSUInteger index) {
@@ -106,12 +106,26 @@
                 value = [value valueForKey:foreignEntity.primary.property];
             }
             
-            if (value) {
-                block(value, field.column, index);
-                index++;
+            if ([entity.primary isEqualToField:field] && [self isEmptyPrimaryKey:value]) {
+                value = nil;
             }
+            
+            if (!value || [value isEqual:field.defaultValue]) {
+                value = [NSNull null];
+            }
+            
+            block(value, field.column, index);
+            index++;
         }
     }
 }
+
+- (BOOL)isEmptyPrimaryKey:(id)primaryKey
+{
+    return primaryKey == nil
+    || ([primaryKey isKindOfClass:[NSNumber class]] && [primaryKey integerValue] == 0)
+    || ([primaryKey isKindOfClass:[NSString class]] && [primaryKey length] == 0);
+}
+
 
 @end

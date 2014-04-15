@@ -7,7 +7,6 @@
 //
 
 #import "File.h"
-#import "DBCoder.h"
 
 @implementation File
 

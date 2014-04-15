@@ -25,4 +25,6 @@ typedef struct {
 - (DBQuery)queryToNullifyRelation:(DBEntityRelation *)relation fromObject:(id)fromObject toObject:(id)toObject;
 - (DBQuery)queryToSelectEntity:(DBEntity *)entity withPrimaryKey:(id)primaryKeyValue;
 
+- (BOOL)isEmptyPrimaryKey:(id)primaryKey;
+
 @end

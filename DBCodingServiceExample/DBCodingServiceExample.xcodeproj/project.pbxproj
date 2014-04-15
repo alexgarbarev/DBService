@@ -34,6 +34,8 @@
 		FA43219318FDA5E800387EFE /* DBScheme.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43219218FDA5E800387EFE /* DBScheme.m */; };
 		FA43219718FDA9F800387EFE /* DBService.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43219618FDA9F800387EFE /* DBService.m */; };
 		FA43219C18FDAEF600387EFE /* DBQueryBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43219B18FDAEF600387EFE /* DBQueryBuilder.m */; };
+		FA43219F18FDD8A600387EFE /* DBObjectDecoder.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43219E18FDD8A600387EFE /* DBObjectDecoder.m */; };
+		FA4321A018FDD90700387EFE /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B8639D2169EBE0B004C6490 /* ViewController.m */; };
 		FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B4E18F5E07B00A0F79F /* Message.m */; };
 		FA8E6B5218F5E08600A0F79F /* Attachment.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B5118F5E08600A0F79F /* Attachment.m */; };
 /* End PBXBuildFile section */
@@ -96,6 +98,8 @@
 		FA43219618FDA9F800387EFE /* DBService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBService.m; sourceTree = "<group>"; };
 		FA43219A18FDAEF600387EFE /* DBQueryBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBQueryBuilder.h; sourceTree = "<group>"; };
 		FA43219B18FDAEF600387EFE /* DBQueryBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBQueryBuilder.m; sourceTree = "<group>"; };
+		FA43219D18FDD8A600387EFE /* DBObjectDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBObjectDecoder.h; sourceTree = "<group>"; };
+		FA43219E18FDD8A600387EFE /* DBObjectDecoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBObjectDecoder.m; sourceTree = "<group>"; };
 		FA8E6B4318F5BC9200A0F79F /* DBCoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCoder.h; sourceTree = "<group>"; };
 		FA8E6B4418F5BC9200A0F79F /* DBCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBCoder.m; sourceTree = "<group>"; };
 		FA8E6B4518F5BC9200A0F79F /* DBCoder_DBService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCoder_DBService.h; sourceTree = "<group>"; };
@@ -286,6 +290,8 @@
 			children = (
 				FA43219A18FDAEF600387EFE /* DBQueryBuilder.h */,
 				FA43219B18FDAEF600387EFE /* DBQueryBuilder.m */,
+				FA43219D18FDD8A600387EFE /* DBObjectDecoder.h */,
+				FA43219E18FDD8A600387EFE /* DBObjectDecoder.m */,
 			);
 			path = Internal;
 			sourceTree = "<group>";
@@ -473,8 +479,10 @@
 				FA43219718FDA9F800387EFE /* DBService.m in Sources */,
 				FA43219C18FDAEF600387EFE /* DBQueryBuilder.m in Sources */,
 				FA8E6B5218F5E08600A0F79F /* Attachment.m in Sources */,
+				FA43219F18FDD8A600387EFE /* DBObjectDecoder.m in Sources */,
 				FA43218318FD9AD800387EFE /* DBOneToOneRelation.m in Sources */,
 				FA43218918FD9AF400387EFE /* DBManyToManyRelation.m in Sources */,
+				FA4321A018FDD90700387EFE /* ViewController.m in Sources */,
 				FA06CF3018FC77B0006E94CF /* DBEntity.m in Sources */,
 				FA43218C18FDA0CE00387EFE /* DBEntityRelation.m in Sources */,
 				FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */,

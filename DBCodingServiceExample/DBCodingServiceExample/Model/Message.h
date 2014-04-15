@@ -7,9 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DBCodingService.h"
 
-@interface Message : NSObject <DBCoding>
+@interface Message : NSObject
 
 @property (nonatomic) NSInteger messageId;
 

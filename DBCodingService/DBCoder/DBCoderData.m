@@ -8,12 +8,12 @@
 
 #import "DBCoderData.h"
 #import "DBTableConnection.h"
-#import "NSObject+DBScheme.h"
+#import "NSObject+DBObjectScheme.h"
 
 @interface DBCoderDataValue : NSObject
 
 @property (nonatomic, strong) id value;
-@property (nonatomic) id<DBScheme> scheme;
+@property (nonatomic) id<DBObjectScheme> scheme;
 
 @end
 
@@ -66,7 +66,7 @@
     return valuesForColumns[column];
 }
 
-- (id<DBScheme>)valueSchemeForColumn:(NSString *)column
+- (id<DBObjectScheme>)valueSchemeForColumn:(NSString *)column
 {
     DBCoderDataValue *value = [self dataValueForColumn:column];
     return value.scheme ? value.scheme : [[value.value class] scheme];
@@ -78,7 +78,7 @@
     return value.value;
 }
 
-- (void)setObject:(id)object withScheme:(id<DBScheme>)scheme forColumn:(NSString *)column
+- (void)setObject:(id)object withScheme:(id<DBObjectScheme>)scheme forColumn:(NSString *)column
 {
     if (object && column && ![ignoredColumns containsObject:column]) {
         DBCoderDataValue *value = [DBCoderDataValue new];
@@ -93,7 +93,7 @@
     [valuesForColumns removeObjectForKey:column];
 }
 
-- (void)setObjects:(NSArray *)objects withScheme:(id<DBScheme>)scheme withForeignKey:(NSString *)key
+- (void)setObjects:(NSArray *)objects withScheme:(id<DBObjectScheme>)scheme withForeignKey:(NSString *)key
 {
     if (objects && key) {
         DBCoderDataValue *value = [DBCoderDataValue new];
@@ -131,7 +131,7 @@
     return [oneToManyValues allKeys];
 }
 
-- (void)enumerateOneToManyObjectsForKey:(NSString *)foreigKey usingBlock:(void(^)(id value, id<DBScheme>scheme))enumerationBlock
+- (void)enumerateOneToManyObjectsForKey:(NSString *)foreigKey usingBlock:(void(^)(id value, id<DBObjectScheme>scheme))enumerationBlock
 {
     DBCoderDataValue *dataValue = oneToManyValues[foreigKey];
     for (NSArray *value in dataValue.value) {

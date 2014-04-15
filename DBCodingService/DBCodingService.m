@@ -124,7 +124,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
 - (void)replaceObjectsByIdsInCoder:(DBCoder *)coder
 {
     //replace all db object with it's ids
-    [coder enumerateOneToOneRelatedObjects:^id(id object, id<DBScheme> scheme, NSString *column) {
+    [coder enumerateOneToOneRelatedObjects:^id(id object, id<DBObjectScheme> scheme, NSString *column) {
         __block id insertedId = nil;
         
         [self save:object withScheme:scheme mode:DBModeAll completion:^(BOOL wasInserted, id objectId, NSError *error) {
@@ -142,13 +142,13 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
 - (void)saveOneToManyWithId:(id)objectId inCoder:(DBCoder *)coder
 {
     NSMutableArray *savedIdentifiers = [NSMutableArray new];
-    __block id<DBScheme> objectsScheme = nil;
+    __block id<DBObjectScheme> objectsScheme = nil;
     
     NSArray *allKeys = [coder allOneToManyForeignKeys];
     
     for (NSString *foreignKey in allKeys)
     {
-        [coder enumerateOneToManyRelatedObjectsForKey:foreignKey withBlock:^(id object, id<DBScheme>scheme) {
+        [coder enumerateOneToManyRelatedObjectsForKey:foreignKey withBlock:^(id object, id<DBObjectScheme>scheme) {
             objectsScheme = scheme;
             DBCoder *coder = [[DBCoder alloc] initWithObject:object scheme:scheme];
             [coder encodeObject:objectId forColumn:foreignKey];
@@ -181,7 +181,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     
     for (DBTableConnection *connection in connections)
     {
-        id<DBScheme>connectionScheme = [[DBTableConnectionScheme alloc] initWithTableConnection:connection];
+        id<DBObjectScheme>connectionScheme = [[DBTableConnectionScheme alloc] initWithTableConnection:connection];
 
         NSString *query = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@ = ?",connection.table, connection.encoderColumn];
         NSArray *connectionDecoders = [self decodersWithScheme:connectionScheme fromSQLQuery:query withArgs:@[encoderId]];
@@ -190,7 +190,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
             id encodedObjectId = [decoder decodeObjectForColumn:connection.encodedObjectColumn];
             connectionDecodersDict[encodedObjectId] = decoder;
         }
-        __block id<DBScheme> encodedObjectScheme = nil;
+        __block id<DBObjectScheme> encodedObjectScheme = nil;
         
         [coder enumerateManyToManyCodersForConnection:connection usingBlock:^(DBCoder *connectionCoder) {
             id encodedObject = [connectionCoder decodeObjectForColumn:connection.encodedObjectColumn];
@@ -230,7 +230,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     }
 }
 
-- (void)save:(id)object withScheme:(id<DBScheme>)scheme mode:(DBMode)mode completion:(DBSaveCompletion)completion
+- (void)save:(id)object withScheme:(id<DBObjectScheme>)scheme mode:(DBMode)mode completion:(DBSaveCompletion)completion
 {
     if (!object){
         NSError * error = [NSError errorWithCode:DBErrorCodeObjectIsNil description:@"Object to save can't be nil"];
@@ -363,7 +363,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     return isExist;
 }
 
-- (id)objectWithScheme:(id<DBScheme>)scheme fromDecoder:(DBCoder *)decoder
+- (id)objectWithScheme:(id<DBObjectScheme>)scheme fromDecoder:(DBCoder *)decoder
 {
     id object = nil;
     if (scheme && decoder) {
@@ -372,11 +372,8 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     return object;
 }
 
-- (id) objectOfClass:(Class) objectClass fromDecoder:(DBCoder *) decoder{    
-    return [self objectOfClass:objectClass withSchemeClass:objectClass fromDecoder:decoder];
-}
 
-- (id)objectWithId:(id)identifier andScheme:(id<DBScheme>)scheme
+- (id)objectWithId:(id)identifier andScheme:(id<DBObjectScheme>)scheme
 {
     if (!identifier) {
         NSLog(@"You are trying to fetch object of %@ scheme with nil id.", scheme);
@@ -412,7 +409,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     return [self objectWithId:identifier andScheme:[[object class] scheme]];
 }
 
-- (NSArray *)decodersWithScheme:(id<DBScheme>)scheme fromSQLQuery:(NSString *)query withArgs:(NSArray *) args
+- (NSArray *)decodersWithScheme:(id<DBObjectScheme>)scheme fromSQLQuery:(NSString *)query withArgs:(NSArray *) args
 {
     if (!query) {
         NSLog(@"Query to fetch decoders can't be nil");
@@ -435,7 +432,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     return resultArray;
 }
 
-- (NSArray *)objectsWithScheme:(id<DBScheme>)scheme fromSQLQuery:(NSString *)query withArgs:(NSArray *)args;
+- (NSArray *)objectsWithScheme:(id<DBObjectScheme>)scheme fromSQLQuery:(NSString *)query withArgs:(NSArray *)args;
 {
     NSParameterAssert(scheme);
     
@@ -448,7 +445,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     return objects;
 }
 
-- (id)latestPrimaryKeyForScheme:(id<DBScheme>)scheme;
+- (id)latestPrimaryKeyForScheme:(id<DBObjectScheme>)scheme;
 {
     __block id primaryKey = nil;
     
@@ -474,7 +471,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     }];
     
     //Remove arrays of objects which refers to current
-    [coder enumerateOneToManyRelatedObjects:^(id object, id<DBScheme> scheme, NSString *foreignKey) {
+    [coder enumerateOneToManyRelatedObjects:^(id object, id<DBObjectScheme> scheme, NSString *foreignKey) {
         if ([[coder scheme] deleteRuleForOneToManyRelatedObjectWithScheme:scheme connectedOnForeignColumn:foreignKey] == DBSchemeDeleteRuleCascade) {
             DBCoder *foreignCoder = [[DBCoder alloc] initWithObject:object scheme:scheme];
             [self delete:foreignCoder error:error];
@@ -482,7 +479,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     }];
     
     //Remove object that refers to current
-    [coder enumerateOneToOneRelatedObjects:^id(id object, id<DBScheme> scheme, NSString *column) {
+    [coder enumerateOneToOneRelatedObjects:^id(id object, id<DBObjectScheme> scheme, NSString *column) {
         if ([[coder scheme] deleteRuleForOneToOneRelatedObjectWithScheme:scheme forColumn:column] == DBSchemeDeleteRuleCascade) {
             DBCoder *relatedCoder = [[DBCoder alloc] initWithObject:object scheme:scheme];
             [self delete:relatedCoder error:error];
@@ -511,7 +508,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     [self delete:coder error:error where:[NSString stringWithFormat:@"WHERE %@ = ?",primaryKeyValue]  args:@[[coder primaryKeyToEncode]]];
 }
 
-- (void)deleteObject:(id)object withScheme:(id<DBScheme>)scheme completion:(DBDeleteCompletion)completion
+- (void)deleteObject:(id)object withScheme:(id<DBObjectScheme>)scheme completion:(DBDeleteCompletion)completion
 {
     NSError *error = nil;
     
@@ -536,7 +533,7 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
     [self deleteObject:object withScheme:[[object class] scheme] completion:completion];
 }
 
-- (void)deleteOneToManyObjectsWithScheme:(id<DBScheme>)scheme withForeignKey:(NSString *)foreignKey where:(NSString *)whereQuery args:(NSArray *)args
+- (void)deleteOneToManyObjectsWithScheme:(id<DBObjectScheme>)scheme withForeignKey:(NSString *)foreignKey where:(NSString *)whereQuery args:(NSArray *)args
 {
     NSString *selectQuery = [NSString stringWithFormat:@"SELECT * FROM %@ WHERE %@",[scheme table], whereQuery];
     NSArray *decoders = [self decodersWithScheme:scheme fromSQLQuery:selectQuery withArgs:args];

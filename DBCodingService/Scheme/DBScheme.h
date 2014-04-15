@@ -2,51 +2,18 @@
 //  DBScheme.h
 //  DBCodingServiceExample
 //
-//  Created by Aleksey Garbarev on 12.04.14.
+//  Created by Aleksey Garbarev on 16.04.14.
 //
 //
 
-#import "NSObject+DBScheme.h"
+@class DBEntity;
 
-typedef enum {
-    DBSchemeDeleteRuleNoAction,
-    DBSchemeDeleteRuleNullify,
-    DBSchemeDeleteRuleCascade,
-    DBSchemeDeleteRuleDeny
-} DBSchemeDeleteRule;
+@interface DBScheme : NSObject 
 
-@class DBCoder;
-@class DBTableConnection;
+- (void)registerEntity:(DBEntity *)entity;
 
-@protocol DBScheme <NSObject>
+- (DBEntity *)entityForClass:(Class)objectClass;
 
-- (void)encodeObject:(id)object withCoder:(DBCoder *)encoder;
-- (id)decodeObject:(id)object fromCoder:(DBCoder *)decoder;
-
-- (NSString *)primaryKeyColumn;
-- (id)primaryKeyValueFromObject:(id)object;
-- (void)setPrimaryKeyValue:(id)primaryKey forObject:(id)object;
-
-- (NSString *)table;
-
-#pragma mark - Foreign keys
-
-- (NSString *)foreignKeyColumnForRelationWithScheme:(id<DBScheme>)scheme;
-- (id<DBScheme>)schemeForForeignKeyColumn:(NSString *)column;
-
-#pragma mark - Parent scheme support
-
-@property (nonatomic, strong) id<DBScheme> parentScheme;
-
-#pragma mark - Deletion callbacks
-
-- (DBSchemeDeleteRule)deleteRuleForOneToOneRelatedObjectWithScheme:(id<DBScheme>)scheme forColumn:(NSString *)column;
-
-- (DBSchemeDeleteRule)deleteRuleForOneToManyRelatedObjectWithScheme:(id<DBScheme>)scheme connectedOnForeignColumn:(NSString *)foreignColumn;
-
-- (DBSchemeDeleteRule)deleteRuleForManyToManyRelationWithConnection:(DBTableConnection *)connection;
-
-- (DBSchemeDeleteRule)deleteRuleForManyToManyRelatedObjectWithScheme:(id<DBScheme>)scheme andConnection:(DBTableConnection *)connection;
+- (NSArray *)allEntities;
 
 @end
-

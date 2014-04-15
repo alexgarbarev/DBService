@@ -11,7 +11,7 @@
 @class FMResultSet;
 @class DBTableConnection;
 @class DBCoder;
-@protocol DBScheme;
+@protocol DBObjectScheme;
 
 @interface DBCoderData : NSObject
 
@@ -21,18 +21,18 @@
 - (NSUInteger)columnsCount;
 
 - (id)valueForColumn:(NSString *)column;
-- (id<DBScheme>)valueSchemeForColumn:(NSString *)column;
+- (id<DBObjectScheme>)valueSchemeForColumn:(NSString *)column;
 
-- (void)setObject:(id)object withScheme:(id<DBScheme>)scheme forColumn:(NSString *)column;
+- (void)setObject:(id)object withScheme:(id<DBObjectScheme>)scheme forColumn:(NSString *)column;
 - (void)removeObjectForColumn:(NSString *)column;
 
-- (void)setObjects:(NSArray *)objects withScheme:(id<DBScheme>)scheme withForeignKey:(NSString *)key;
+- (void)setObjects:(NSArray *)objects withScheme:(id<DBObjectScheme>)scheme withForeignKey:(NSString *)key;
 - (void)removeObjectsForForeignKey:(NSString *)key;
 
 - (void)setCoders:(NSArray *)coders forConnection:(DBTableConnection *)connection;
 
 - (NSArray *)allOneToManyForeignKeys;
-- (void)enumerateOneToManyObjectsForKey:(NSString *)foreigKey usingBlock:(void(^)(id value, id<DBScheme>scheme))enumerationBlock;
+- (void)enumerateOneToManyObjectsForKey:(NSString *)foreigKey usingBlock:(void(^)(id value, id<DBObjectScheme>scheme))enumerationBlock;
 
 - (NSArray *)allManyToManyConnections;
 - (void)enumerateManyToManyCodersForConnection:(DBTableConnection *)connection usingBlock:(void(^)(DBCoder *connectionCoder))block;

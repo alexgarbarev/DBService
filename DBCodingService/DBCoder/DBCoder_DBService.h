@@ -8,18 +8,18 @@
 #import "FMDatabase.h"
 
 @class DBCodingService;
-@protocol DBScheme;
+@protocol DBObjectScheme;
 
 typedef void(^DBStatement)(NSString *query, NSArray *args);
-typedef id(^DBInsertingBlock)(id object, id<DBScheme> scheme, NSString *column);
-typedef void(^DBInsertingForeignBlock)(id object, id<DBScheme> scheme, NSString *foreignKey);
+typedef id(^DBInsertingBlock)(id object, id<DBObjectScheme> scheme, NSString *column);
+typedef void(^DBInsertingForeignBlock)(id object, id<DBObjectScheme> scheme, NSString *foreignKey);
 
 
 @interface DBCoder(DBService)
 
 - (id)primaryKeyToEncode;
 
-- (id<DBScheme>)scheme;
+- (id<DBObjectScheme>)scheme;
 
 /* one-to-one relations */
 - (void) enumerateOneToOneRelatedObjects:(DBInsertingBlock)block;
@@ -31,14 +31,14 @@ typedef void(^DBInsertingForeignBlock)(id object, id<DBScheme> scheme, NSString 
 
 /* one-to-many relations */
 - (NSArray *)allOneToManyForeignKeys;
-- (void)enumerateOneToManyRelatedObjectsForKey:(NSString *)foreignKey withBlock:(void(^)(id object, id<DBScheme>scheme))block;
+- (void)enumerateOneToManyRelatedObjectsForKey:(NSString *)foreignKey withBlock:(void(^)(id object, id<DBObjectScheme>scheme))block;
 - (void)enumerateOneToManyRelatedObjects:(DBInsertingForeignBlock)block;
 
 /* Init for decoding */
-- (id)initWithResultSet:(FMResultSet *)resultSet scheme:(id<DBScheme>)scheme dbService:(DBCodingService *)service;
+- (id)initWithResultSet:(FMResultSet *)resultSet scheme:(id<DBObjectScheme>)scheme dbService:(DBCodingService *)service;
 
 /* Init for encoding object */
-- (id)initWithObject:(id)object scheme:(id<DBScheme>)scheme;
+- (id)initWithObject:(id)object scheme:(id<DBObjectScheme>)scheme;
 
 /* Init for many-to-many relations */
 - (id)initWithConnection:(DBTableConnection *)connection;

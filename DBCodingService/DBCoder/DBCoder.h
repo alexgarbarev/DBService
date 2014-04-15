@@ -8,12 +8,9 @@
 
 #import <Foundation/Foundation.h>
 
-#import "DBTableConnection.h"
-#import "DBCoding.h"
-#import "DBScheme.h"
-
-@protocol DBScheme;
+@protocol DBObjectScheme;
 @class DBCoder;
+@class DBTableConnection;
 
 #define dbPrimaryKeyUndefined 0
 
@@ -34,7 +31,7 @@ typedef void(^DBDecodingBlock)(DBCoder *table_decoder);
 
 /** Encode one-to-one and primitive objects */
 - (void)encodeObject:(id)object forColumn:(NSString *)column;
-- (void)encodeObject:(id)object withScheme:(id<DBScheme>)scheme forColumn:(NSString *)column;
+- (void)encodeObject:(id)object withScheme:(id<DBObjectScheme>)scheme forColumn:(NSString *)column;
 
 /** Encode many-to-many objects */
 - (void)encodeObjects:(NSArray *)objects connection:(DBTableConnection *)connection coding:(DBCodingBlock)codingBlock;
@@ -46,10 +43,10 @@ typedef void(^DBDecodingBlock)(DBCoder *table_decoder);
 #pragma mark - Decoding
 
 - (id)decodeObjectForColumn:(NSString *)column;
-- (id)decodeObjectWithScheme:(id<DBScheme>)scheme forColumn:(NSString *)column;
+- (id)decodeObjectWithScheme:(id<DBObjectScheme>)scheme forColumn:(NSString *)column;
 
 /** Decode one-to-many objects */
-- (NSArray *)decodeObjectsWithScheme:(id<DBScheme>)scheme withForeignKeyColumn:(NSString *)foreignKeyColumn;
+- (NSArray *)decodeObjectsWithScheme:(id<DBObjectScheme>)scheme withForeignKeyColumn:(NSString *)foreignKeyColumn;
 
 /** Decode many-to-many objects */
 - (void)decodeObjectsFromConnection:(DBTableConnection *)connection decoding:(DBDecodingBlock)decodingBlock;

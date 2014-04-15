@@ -10,7 +10,7 @@
 #import "DBCoder_DBService.h"
 #import "DBCoderData.h"
 #import "DBCodingService.h"
-#import "DBScheme.h"
+#import "DBObjectScheme.h"
 #import "DBTableConnectionScheme.h"
 
 #import "NSInvocation_Class.h"
@@ -21,7 +21,7 @@
     DBCoderData *data;
     
     //Scheme:
-    id<DBScheme> scheme;
+    id<DBObjectScheme> scheme;
     
     //Decoding:
     DBCodingService *decodingService;
@@ -69,7 +69,7 @@
     [data setObject:object withScheme:[[object class] scheme] forColumn:column];
 }
 
-- (void)encodeObject:(id)object withScheme:(id<DBScheme>)_scheme forColumn:(NSString *)column
+- (void)encodeObject:(id)object withScheme:(id<DBObjectScheme>)_scheme forColumn:(NSString *)column
 {
     [data setObject:object withScheme:_scheme forColumn:column];
 }
@@ -77,7 +77,7 @@
 - (void)encodeObjects:(NSArray *)objects withForeignKeyColumn:(NSString *)foreignKeyColumn
 {
     NSAssert(![encodingObject isKindOfClass:[DBTableConnection class]], @"One-To-Many relations not supported for connection-table encoders");
-    id<DBScheme>_scheme = [[[objects firstObject] class] scheme];
+    id<DBObjectScheme>_scheme = [[[objects firstObject] class] scheme];
     if ([objects count] > 0) {
         NSParameterAssert(_scheme);
         [data setObjects:objects withScheme:_scheme withForeignKey:foreignKeyColumn];
@@ -104,7 +104,7 @@
     }];
 }
 
-- (id)decodeObjectWithScheme:(id<DBScheme>)_scheme forColumn:(NSString *)column
+- (id)decodeObjectWithScheme:(id<DBObjectScheme>)_scheme forColumn:(NSString *)column
 {
     if (_scheme) {
         id objectId = [self decodeObjectForColumn:column];
@@ -118,7 +118,7 @@
     }
 }
 
-- (NSArray *)decodeObjectsWithScheme:(id<DBScheme>)_scheme withForeignKeyColumn:(NSString *)foreignKeyColumn
+- (NSArray *)decodeObjectsWithScheme:(id<DBObjectScheme>)_scheme withForeignKeyColumn:(NSString *)foreignKeyColumn
 {
     if (!foreignKeyColumn) {
         NSLog(@"You are trying to fetch objects of %@ scheme with nil foreign key.",_scheme);
@@ -152,7 +152,7 @@
 
 @implementation DBCoder(DBService)
 
-- (id<DBScheme>)scheme
+- (id<DBObjectScheme>)scheme
 {
     return scheme;
 }
@@ -170,7 +170,7 @@
     return self;
 }
 
-- (id)initWithResultSet:(FMResultSet *)resultSet scheme:(id<DBScheme>)_scheme dbService:(DBCodingService *)service
+- (id)initWithResultSet:(FMResultSet *)resultSet scheme:(id<DBObjectScheme>)_scheme dbService:(DBCodingService *)service
 {
     self = [super init];
     if (self) {
@@ -192,7 +192,7 @@
 }
 
 /* Init for encoding object */
-- (id)initWithObject:(id)object scheme:(id<DBScheme>)_scheme
+- (id)initWithObject:(id)object scheme:(id<DBObjectScheme>)_scheme
 {
     self = [super init];
     if (self) {
@@ -347,7 +347,7 @@
 {    
     for (NSString * column in [data allColumns])
     {
-        id<DBScheme> objectScheme = [data valueSchemeForColumn:column];
+        id<DBObjectScheme> objectScheme = [data valueSchemeForColumn:column];
         
         /* If it is db-coding object */
         if (objectScheme)
@@ -393,7 +393,7 @@
     return [data allOneToManyForeignKeys];
 }
 
-- (void)enumerateOneToManyRelatedObjectsForKey:(NSString *)foreignKey withBlock:(void(^)(id object, id<DBScheme>scheme))block
+- (void)enumerateOneToManyRelatedObjectsForKey:(NSString *)foreignKey withBlock:(void(^)(id object, id<DBObjectScheme>scheme))block
 {
     if (block) {
         [data enumerateOneToManyObjectsForKey:foreignKey usingBlock:block];
@@ -404,7 +404,7 @@
 {
     if (block) {
         for (NSString *foreignKey in [data allOneToManyForeignKeys]) {
-            [data enumerateOneToManyObjectsForKey:foreignKey usingBlock:^(id value, id<DBScheme>_scheme) {
+            [data enumerateOneToManyObjectsForKey:foreignKey usingBlock:^(id value, id<DBObjectScheme>_scheme) {
                 block(value, _scheme, foreignKey);
             }];
         }

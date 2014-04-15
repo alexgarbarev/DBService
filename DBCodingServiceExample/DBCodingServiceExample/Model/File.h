@@ -7,9 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DBCoder.h"
 
-@interface File : NSObject <DBCoding>
+@interface File : NSObject
 
 @property (nonatomic) NSUInteger fileId;
 

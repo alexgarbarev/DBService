@@ -7,9 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "DBCoder.h"
 
-@interface Attachment : NSObject <DBCoding>
+@interface Attachment : NSObject
 
 @property (nonatomic) NSUInteger attachmentId;
 

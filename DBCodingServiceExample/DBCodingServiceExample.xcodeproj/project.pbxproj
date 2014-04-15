@@ -18,7 +18,6 @@
 		5B8639CC169EBE0B004C6490 /* Default.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B8639CB169EBE0B004C6490 /* Default.png */; };
 		5B8639CE169EBE0B004C6490 /* Default@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B8639CD169EBE0B004C6490 /* Default@2x.png */; };
 		5B8639D0169EBE0B004C6490 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B8639CF169EBE0B004C6490 /* Default-568h@2x.png */; };
-		5B8639D3169EBE0B004C6490 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B8639D2169EBE0B004C6490 /* ViewController.m */; };
 		5B8639D6169EBE0C004C6490 /* ViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 5B8639D4169EBE0C004C6490 /* ViewController.xib */; };
 		5B8639DE169EBE0C004C6490 /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B8639DD169EBE0C004C6490 /* SenTestingKit.framework */; };
 		5B8639DF169EBE0C004C6490 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B8639B9169EBE0B004C6490 /* UIKit.framework */; };
@@ -26,14 +25,15 @@
 		5B8639E8169EBE0C004C6490 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5B8639E6169EBE0C004C6490 /* InfoPlist.strings */; };
 		5B8639EB169EBE0C004C6490 /* DBCodingServiceExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B8639EA169EBE0C004C6490 /* DBCodingServiceExampleTests.m */; };
 		5B863A13169EBFB7004C6490 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B863A12169EBFB7004C6490 /* libsqlite3.dylib */; };
-		5B863A50169EC266004C6490 /* DBCodingService.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A4A169EC266004C6490 /* DBCodingService.m */; };
-		5B863A51169EC266004C6490 /* DBTableConnection.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A4C169EC266004C6490 /* DBTableConnection.m */; };
-		5B863A52169EC266004C6490 /* NSInvocation_Class.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B863A4E169EC266004C6490 /* NSInvocation_Class.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
-		FA7845E018FB0D5E00F83435 /* NSObject+DBScheme.m in Sources */ = {isa = PBXBuildFile; fileRef = FA7845DF18FB0D5E00F83435 /* NSObject+DBScheme.m */; };
-		FA7845E318FB0DDE00F83435 /* DBCodingScheme.m in Sources */ = {isa = PBXBuildFile; fileRef = FA7845E218FB0DDE00F83435 /* DBCodingScheme.m */; };
-		FA7845E718FB2B8400F83435 /* DBTableConnectionScheme.m in Sources */ = {isa = PBXBuildFile; fileRef = FA7845E618FB2B8400F83435 /* DBTableConnectionScheme.m */; };
-		FA8E6B4618F5BC9200A0F79F /* DBCoder.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B4418F5BC9200A0F79F /* DBCoder.m */; };
-		FA8E6B4918F5BD2F00A0F79F /* DBCoderData.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B4818F5BD2F00A0F79F /* DBCoderData.m */; };
+		FA06CF3018FC77B0006E94CF /* DBEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FA06CF2F18FC77B0006E94CF /* DBEntity.m */; };
+		FA43217C18FD9AB600387EFE /* DBEntityField.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43217B18FD9AB600387EFE /* DBEntityField.m */; };
+		FA43218318FD9AD800387EFE /* DBOneToOneRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43218218FD9AD800387EFE /* DBOneToOneRelation.m */; };
+		FA43218618FD9AE800387EFE /* DBOneToManyRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43218518FD9AE800387EFE /* DBOneToManyRelation.m */; };
+		FA43218918FD9AF400387EFE /* DBManyToManyRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43218818FD9AF400387EFE /* DBManyToManyRelation.m */; };
+		FA43218C18FDA0CE00387EFE /* DBEntityRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43218B18FDA0CE00387EFE /* DBEntityRelation.m */; };
+		FA43219318FDA5E800387EFE /* DBScheme.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43219218FDA5E800387EFE /* DBScheme.m */; };
+		FA43219718FDA9F800387EFE /* DBService.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43219618FDA9F800387EFE /* DBService.m */; };
+		FA43219C18FDAEF600387EFE /* DBQueryBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43219B18FDAEF600387EFE /* DBQueryBuilder.m */; };
 		FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B4E18F5E07B00A0F79F /* Message.m */; };
 		FA8E6B5218F5E08600A0F79F /* Attachment.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B5118F5E08600A0F79F /* Attachment.m */; };
 /* End PBXBuildFile section */
@@ -76,20 +76,26 @@
 		5B863A12169EBFB7004C6490 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
 		5B863A49169EC266004C6490 /* DBCodingService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCodingService.h; sourceTree = "<group>"; };
 		5B863A4A169EC266004C6490 /* DBCodingService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBCodingService.m; sourceTree = "<group>"; };
-		5B863A4B169EC266004C6490 /* DBTableConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBTableConnection.h; sourceTree = "<group>"; };
-		5B863A4C169EC266004C6490 /* DBTableConnection.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBTableConnection.m; sourceTree = "<group>"; };
-		5B863A4D169EC266004C6490 /* NSInvocation_Class.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NSInvocation_Class.h; sourceTree = "<group>"; };
-		5B863A4E169EC266004C6490 /* NSInvocation_Class.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NSInvocation_Class.m; sourceTree = "<group>"; };
 		7E4B7DBD7FC940728B5F2972 /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		9D85D4DD77AA477A83449E27 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		FA7845D818F6D9AF00F83435 /* DBCoding.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBCoding.h; sourceTree = "<group>"; };
-		FA7845DA18F92BDE00F83435 /* DBScheme.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBScheme.h; sourceTree = "<group>"; };
-		FA7845DE18FB0D5E00F83435 /* NSObject+DBScheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+DBScheme.h"; sourceTree = "<group>"; };
-		FA7845DF18FB0D5E00F83435 /* NSObject+DBScheme.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+DBScheme.m"; sourceTree = "<group>"; };
-		FA7845E118FB0DDE00F83435 /* DBCodingScheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCodingScheme.h; sourceTree = "<group>"; };
-		FA7845E218FB0DDE00F83435 /* DBCodingScheme.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBCodingScheme.m; sourceTree = "<group>"; };
-		FA7845E518FB2B8400F83435 /* DBTableConnectionScheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBTableConnectionScheme.h; sourceTree = "<group>"; };
-		FA7845E618FB2B8400F83435 /* DBTableConnectionScheme.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBTableConnectionScheme.m; sourceTree = "<group>"; };
+		FA06CF2E18FC77B0006E94CF /* DBEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBEntity.h; sourceTree = "<group>"; };
+		FA06CF2F18FC77B0006E94CF /* DBEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBEntity.m; sourceTree = "<group>"; };
+		FA43217A18FD9AB600387EFE /* DBEntityField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBEntityField.h; sourceTree = "<group>"; };
+		FA43217B18FD9AB600387EFE /* DBEntityField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBEntityField.m; sourceTree = "<group>"; };
+		FA43218118FD9AD800387EFE /* DBOneToOneRelation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBOneToOneRelation.h; sourceTree = "<group>"; };
+		FA43218218FD9AD800387EFE /* DBOneToOneRelation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBOneToOneRelation.m; sourceTree = "<group>"; };
+		FA43218418FD9AE800387EFE /* DBOneToManyRelation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBOneToManyRelation.h; sourceTree = "<group>"; };
+		FA43218518FD9AE800387EFE /* DBOneToManyRelation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBOneToManyRelation.m; sourceTree = "<group>"; };
+		FA43218718FD9AF400387EFE /* DBManyToManyRelation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBManyToManyRelation.h; sourceTree = "<group>"; };
+		FA43218818FD9AF400387EFE /* DBManyToManyRelation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBManyToManyRelation.m; sourceTree = "<group>"; };
+		FA43218A18FDA0CE00387EFE /* DBEntityRelation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBEntityRelation.h; sourceTree = "<group>"; };
+		FA43218B18FDA0CE00387EFE /* DBEntityRelation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBEntityRelation.m; sourceTree = "<group>"; };
+		FA43219118FDA5E800387EFE /* DBScheme.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBScheme.h; sourceTree = "<group>"; };
+		FA43219218FDA5E800387EFE /* DBScheme.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBScheme.m; sourceTree = "<group>"; };
+		FA43219518FDA9F800387EFE /* DBService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBService.h; sourceTree = "<group>"; };
+		FA43219618FDA9F800387EFE /* DBService.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBService.m; sourceTree = "<group>"; };
+		FA43219A18FDAEF600387EFE /* DBQueryBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBQueryBuilder.h; sourceTree = "<group>"; };
+		FA43219B18FDAEF600387EFE /* DBQueryBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBQueryBuilder.m; sourceTree = "<group>"; };
 		FA8E6B4318F5BC9200A0F79F /* DBCoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCoder.h; sourceTree = "<group>"; };
 		FA8E6B4418F5BC9200A0F79F /* DBCoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBCoder.m; sourceTree = "<group>"; };
 		FA8E6B4518F5BC9200A0F79F /* DBCoder_DBService.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBCoder_DBService.h; sourceTree = "<group>"; };
@@ -211,30 +217,84 @@
 		5B863A45169EC266004C6490 /* DBCodingService */ = {
 			isa = PBXGroup;
 			children = (
+				FA06CF2D18FC77A4006E94CF /* Entity */,
 				FA7845D918F92BB400F83435 /* Scheme */,
-				FA7845D818F6D9AF00F83435 /* DBCoding.h */,
+				FA43219418FDA9E200387EFE /* DBService */,
 				FA8E6B4218F5BC9200A0F79F /* DBCoder */,
 				5B863A49169EC266004C6490 /* DBCodingService.h */,
 				5B863A4A169EC266004C6490 /* DBCodingService.m */,
-				5B863A4B169EC266004C6490 /* DBTableConnection.h */,
-				5B863A4C169EC266004C6490 /* DBTableConnection.m */,
-				5B863A4D169EC266004C6490 /* NSInvocation_Class.h */,
-				5B863A4E169EC266004C6490 /* NSInvocation_Class.m */,
 			);
 			name = DBCodingService;
 			path = ../DBCodingService;
 			sourceTree = "<group>";
 		};
+		FA06CF2D18FC77A4006E94CF /* Entity */ = {
+			isa = PBXGroup;
+			children = (
+				FA06CF2E18FC77B0006E94CF /* DBEntity.h */,
+				FA06CF2F18FC77B0006E94CF /* DBEntity.m */,
+				FA43217918FD9AB600387EFE /* Fields */,
+				FA43217D18FD9ABD00387EFE /* Relations */,
+			);
+			path = Entity;
+			sourceTree = "<group>";
+		};
+		FA43217918FD9AB600387EFE /* Fields */ = {
+			isa = PBXGroup;
+			children = (
+				FA43217A18FD9AB600387EFE /* DBEntityField.h */,
+				FA43217B18FD9AB600387EFE /* DBEntityField.m */,
+			);
+			path = Fields;
+			sourceTree = "<group>";
+		};
+		FA43217D18FD9ABD00387EFE /* Relations */ = {
+			isa = PBXGroup;
+			children = (
+				FA43218D18FDA0D100387EFE /* Base */,
+				FA43218118FD9AD800387EFE /* DBOneToOneRelation.h */,
+				FA43218218FD9AD800387EFE /* DBOneToOneRelation.m */,
+				FA43218418FD9AE800387EFE /* DBOneToManyRelation.h */,
+				FA43218518FD9AE800387EFE /* DBOneToManyRelation.m */,
+				FA43218718FD9AF400387EFE /* DBManyToManyRelation.h */,
+				FA43218818FD9AF400387EFE /* DBManyToManyRelation.m */,
+			);
+			path = Relations;
+			sourceTree = "<group>";
+		};
+		FA43218D18FDA0D100387EFE /* Base */ = {
+			isa = PBXGroup;
+			children = (
+				FA43218A18FDA0CE00387EFE /* DBEntityRelation.h */,
+				FA43218B18FDA0CE00387EFE /* DBEntityRelation.m */,
+			);
+			name = Base;
+			sourceTree = "<group>";
+		};
+		FA43219418FDA9E200387EFE /* DBService */ = {
+			isa = PBXGroup;
+			children = (
+				FA43219518FDA9F800387EFE /* DBService.h */,
+				FA43219618FDA9F800387EFE /* DBService.m */,
+				FA43219918FDAEE200387EFE /* Internal */,
+			);
+			path = DBService;
+			sourceTree = "<group>";
+		};
+		FA43219918FDAEE200387EFE /* Internal */ = {
+			isa = PBXGroup;
+			children = (
+				FA43219A18FDAEF600387EFE /* DBQueryBuilder.h */,
+				FA43219B18FDAEF600387EFE /* DBQueryBuilder.m */,
+			);
+			path = Internal;
+			sourceTree = "<group>";
+		};
 		FA7845D918F92BB400F83435 /* Scheme */ = {
 			isa = PBXGroup;
 			children = (
-				FA7845DA18F92BDE00F83435 /* DBScheme.h */,
-				FA7845DE18FB0D5E00F83435 /* NSObject+DBScheme.h */,
-				FA7845DF18FB0D5E00F83435 /* NSObject+DBScheme.m */,
-				FA7845E118FB0DDE00F83435 /* DBCodingScheme.h */,
-				FA7845E218FB0DDE00F83435 /* DBCodingScheme.m */,
-				FA7845E518FB2B8400F83435 /* DBTableConnectionScheme.h */,
-				FA7845E618FB2B8400F83435 /* DBTableConnectionScheme.m */,
+				FA43219118FDA5E800387EFE /* DBScheme.h */,
+				FA43219218FDA5E800387EFE /* DBScheme.m */,
 			);
 			path = Scheme;
 			sourceTree = "<group>";
@@ -406,20 +466,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA43217C18FD9AB600387EFE /* DBEntityField.m in Sources */,
+				FA43219318FDA5E800387EFE /* DBScheme.m in Sources */,
 				5B8639C6169EBE0B004C6490 /* main.m in Sources */,
-				FA8E6B4618F5BC9200A0F79F /* DBCoder.m in Sources */,
 				5B8639CA169EBE0B004C6490 /* AppDelegate.m in Sources */,
-				5B8639D3169EBE0B004C6490 /* ViewController.m in Sources */,
+				FA43219718FDA9F800387EFE /* DBService.m in Sources */,
+				FA43219C18FDAEF600387EFE /* DBQueryBuilder.m in Sources */,
 				FA8E6B5218F5E08600A0F79F /* Attachment.m in Sources */,
-				5B863A50169EC266004C6490 /* DBCodingService.m in Sources */,
-				FA8E6B4918F5BD2F00A0F79F /* DBCoderData.m in Sources */,
-				5B863A51169EC266004C6490 /* DBTableConnection.m in Sources */,
-				FA7845E718FB2B8400F83435 /* DBTableConnectionScheme.m in Sources */,
-				FA7845E018FB0D5E00F83435 /* NSObject+DBScheme.m in Sources */,
+				FA43218318FD9AD800387EFE /* DBOneToOneRelation.m in Sources */,
+				FA43218918FD9AF400387EFE /* DBManyToManyRelation.m in Sources */,
+				FA06CF3018FC77B0006E94CF /* DBEntity.m in Sources */,
+				FA43218C18FDA0CE00387EFE /* DBEntityRelation.m in Sources */,
 				FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */,
 				5B2BED6A18F6905000A089CA /* File.m in Sources */,
-				5B863A52169EC266004C6490 /* NSInvocation_Class.m in Sources */,
-				FA7845E318FB0DDE00F83435 /* DBCodingScheme.m in Sources */,
+				FA43218618FD9AE800387EFE /* DBOneToManyRelation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

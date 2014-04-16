@@ -12,11 +12,6 @@
 
 @interface DBManyToManyRelation : DBEntityRelation
 
-@property (nonatomic, strong) DBEntityField *fromEntityField;
-
-///Catched automatically from toEntity
-@property (nonatomic, readonly) DBEntityField *toEntityField;
-
 @property (nonatomic, strong) NSString *relationTable;
 @property (nonatomic, strong) NSString *fromEntityIdColumn;
 @property (nonatomic, strong) NSString *toEntityIdColumn;

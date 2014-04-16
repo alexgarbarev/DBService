@@ -10,9 +10,4 @@
 
 @interface DBOneToOneRelation : DBEntityRelation
 
-@property (nonatomic, strong) DBEntityField *fromEntityField;
-
-///Catched automatically from toEntity
-@property (nonatomic, readonly) DBEntityField *toEntityField;
-
 @end

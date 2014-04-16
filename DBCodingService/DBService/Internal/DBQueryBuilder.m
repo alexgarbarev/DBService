@@ -9,8 +9,22 @@
 #import "DBQueryBuilder.h"
 #import "DBEntity.h"
 #import "DBEntityField.h"
+#import "DBScheme.h"
+
+@interface DBQueryBuilder ()
+@property (nonatomic, strong) DBScheme *scheme;
+@end
 
 @implementation DBQueryBuilder
+
+- (instancetype)initWithScheme:(DBScheme *)scheme
+{
+    self = [super init];
+    if (self) {
+        self.scheme = scheme;
+    }
+    return self;
+}
 
 - (DBQuery)queryToSelectEntity:(DBEntity *)entity withPrimaryKey:(id)primaryKeyValue
 {
@@ -20,12 +34,13 @@
     return query;
 }
 
-- (DBQuery)queryToInsertObject:(id)object withEntity:(DBEntity *)entity tryReplace:(BOOL)replace
+- (DBQuery)queryToInsertObject:(id)object withFields:(NSSet *)fields tryReplace:(BOOL)replace
 {
+    DBEntity *entity = [self.scheme entityForClass:[object class]];
     NSMutableString *query = [NSMutableString stringWithFormat:@"INSERT%@ INTO %@(",replace?@" OR REPLACE":@"",[entity table]];
     NSMutableArray *args = [NSMutableArray array];
     
-    [self enumerateColumnsInObject:object withEntity:entity excluding:nil withBlock:^(id value, NSString *column, NSUInteger index) {
+    [self enumerateColumnsInObject:object withEntity:entity fields:fields withBlock:^(id value, NSString *column, NSUInteger index) {
         NSString *comma = (index == 0) ? @"" : @", ";
         [query appendFormat:@"%@%@", comma, column];
         [args addObject:value];
@@ -46,17 +61,24 @@
     return queryStruct;
 }
 
-- (DBQuery)queryToUpdateObject:(id)object withEntity:(DBEntity *)entity
+- (DBQuery)queryToUpdateObject:(id)object withFields:(NSSet *)fields
 {
+    DBEntity *entity = [self.scheme entityForClass:[object class]];
+
+    NSAssert([self isEmptyPrimaryKey:[object valueForKeyPath:entity.primary.property]], @"Object must have non-empty primary key for UPDATE");
+    
     NSMutableString *query = [NSMutableString stringWithFormat:@"UPDATE %@ SET ", [entity table]];
     NSMutableArray *args = [NSMutableArray array];
-
-    [self enumerateColumnsInObject:object withEntity:entity excluding:[NSSet setWithObject:entity.primary.column] withBlock:^(id value, NSString *column, NSUInteger index) {
+    
+    NSMutableSet *fieldsWithoutPrimaryKey = [fields mutableCopy];
+    [fieldsWithoutPrimaryKey removeObject:entity.primary];
+    
+    [self enumerateColumnsInObject:object withEntity:entity fields:fieldsWithoutPrimaryKey withBlock:^(id value, NSString *column, NSUInteger index) {
         NSString *comma = (index == 0) ? @"" : @", ";
         [query appendFormat:@"%@%@ = ?", comma, column];
         [args addObject:value];
     }];
-    
+
     [query appendFormat:@" WHERE %@ = ?", entity.primary.column];
     [args addObject:[object valueForKey:entity.primary.property]];
     
@@ -66,8 +88,9 @@
     return queryStruct;
 }
 
-- (DBQuery)queryToDeleteObject:(id)object withEntity:(DBEntity *)entity
+- (DBQuery)queryToDeleteObject:(id)object
 {
+    DBEntity *entity = [self.scheme entityForClass:[object class]];
     DBQuery query;
     query.query = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ = ?", entity.table, entity.primary.column];
     query.args = @[[object valueForKey:entity.primary.property]];
@@ -92,16 +115,28 @@
 
 #pragma mark - Utils
 
-- (void)enumerateColumnsInObject:(id)object withEntity:(DBEntity *)entity excluding:(NSSet *)columnsToExclude withBlock:(void(^)(id value, NSString *column, NSUInteger index))block
+- (DBEntity *)entityForRelatedField:(DBEntityField *)field inEntity:(DBEntity *)entity
+{
+    __block DBEntity *foreignEntity = nil;
+    [self.scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityField *fromField, DBEntity *toEntity, DBEntityField *toField, BOOL *stop) {
+        if ([field isEqualToField:fromField]) {
+            foreignEntity = toEntity;
+            *stop = YES;
+        }
+    }];
+    return foreignEntity;
+}
+
+- (void)enumerateColumnsInObject:(id)object withEntity:(DBEntity *)entity fields:(NSSet *)fields withBlock:(void(^)(id value, NSString *column, NSUInteger index))block
 {
     NSUInteger index = 0;
     
-    for (DBEntityField *field in [entity fields]) {
-        if (field.column && field.property && ![columnsToExclude containsObject:field.column]) {
+    for (DBEntityField *field in fields) {
+        if (field.column && field.property) {
             
             id value = [object valueForKey:field.property];
             
-            DBEntity *foreignEntity = [entity relationForField:field].toEntity;
+            DBEntity *foreignEntity = [self entityForRelatedField:field inEntity:entity];
             if (foreignEntity) {
                 value = [value valueForKey:foreignEntity.primary.property];
             }
@@ -110,7 +145,7 @@
                 value = nil;
             }
             
-            if (!value || [value isEqual:field.defaultValue]) {
+            if (!value) {
                 value = [NSNull null];
             }
             

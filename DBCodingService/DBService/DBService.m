@@ -54,7 +54,7 @@
 
 - (void)commonDBServiceInit
 {
-    self.queryBuilder = [DBQueryBuilder new];
+    self.queryBuilder = [[DBQueryBuilder alloc] initWithScheme:self.scheme];
 }
 
 #pragma mark - Working with FMDB
@@ -101,10 +101,10 @@
 
 - (void)save:(id)object completion:(DBSaveCompletion)completion
 {
-    [self save:object exceptRelations:nil completion:completion];
+    [self save:object exceptFields:nil completion:completion];
 }
 
-- (void)save:(id)object exceptRelations:(NSSet *)relationsToExclude completion:(DBSaveCompletion)completion
+- (void)save:(id)object exceptFields:(NSSet *)fieldsToExclude completion:(DBSaveCompletion)completion
 {
     DBEntity *entity = [self.scheme entityForClass:[object class]];
 
@@ -113,13 +113,14 @@
     id objectId = [object valueForKey:entity.primary.property];
     
     //1. Save one-to-one related objects
-    NSSet *circularReferences = [self saveOneToOneRelatedObjectsInObject:object withEntity:entity exceptRelations:relationsToExclude];
+    NSSet *circularFields = [self saveToOneRelatedObjectsInObject:object withEntity:entity exceptFields:fieldsToExclude];
     
+    NSSet *fieldsToSave = [[entity fields] set];
     //2. Save object itself
     if ([self isExistsObject:object withEntity:entity]) {
-        [self updateObject:object withEntity:entity error:&error];
+        [self updateObject:object withFields:fieldsToSave error:&error];
     } else {
-        id insertedId = [self insertObject:object withEntity:entity tryReplace:NO error:&error];
+        id insertedId = [self insertObject:object withFields:fieldsToSave tryReplace:NO error:&error];
         if ([self.queryBuilder isEmptyPrimaryKey:objectId] && insertedId) {
             objectId = insertedId;
             [object setValue:objectId forKey:entity.primary.property];
@@ -130,16 +131,16 @@
     //4. Save many-to-many related objects
     
     //5. Save one-to-one circular references
-    [self saveCircularRelations:circularReferences inObject:object withEntity:entity];
+    [self saveCircularFields:circularFields inObject:object withEntity:entity];
     
     if (completion) {
         completion(wasInserted, objectId, error);
     }
 }
 
-- (void)updateObject:(id)object withEntity:(DBEntity *)entity error:(NSError **)error
+- (void)updateObject:(id)object withFields:(NSSet *)fields error:(NSError **)error
 {
-    DBQuery query = [self.queryBuilder queryToUpdateObject:object withEntity:entity];
+    DBQuery query = [self.queryBuilder queryToUpdateObject:object withFields:fields];
     
     BOOL success = [self executeUpdate:query.query withArgumentsInArray:query.args];
     
@@ -148,11 +149,11 @@
     }
 }
 
-- (id)insertObject:(id)object withEntity:(DBEntity *)entity tryReplace:(BOOL)replace error:(NSError **)error
+- (id)insertObject:(id)object withFields:(NSSet *)fields tryReplace:(BOOL)replace error:(NSError **)error
 {
     id insertedId = nil;
     
-    DBQuery query = [self.queryBuilder queryToInsertObject:object withEntity:entity tryReplace:replace];
+    DBQuery query = [self.queryBuilder queryToInsertObject:object withFields:fields tryReplace:replace];
     BOOL success = [self executeUpdate:query.query withArgumentsInArray:query.args];
     
     if (!success) {
@@ -164,36 +165,50 @@
     return insertedId;
 }
 
-- (NSSet *)saveOneToOneRelatedObjectsInObject:(id)object withEntity:(DBEntity *)entity exceptRelations:(NSSet *)relationsToExclude
-{
-    NSMutableSet *circularRelations = [NSMutableSet new];
-    
-    for (DBEntityRelation *relation in [entity relations]) {
-        if ([relation isKindOfClass:[DBOneToOneRelation class]] && ![relationsToExclude containsObject:relation]) {
-            DBEntityField *fromField = relation.fromEntityField;
-            DBEntityField *toField = relation.toEntityField;
-            
-            if (fromField && toField) {
-                [circularRelations addObject:relation];
-            }
+#pragma mark - Saving to-one relations
 
+- (NSSet *)saveToOneRelatedObjectsInObject:(id)object withEntity:(DBEntity *)entity exceptFields:(NSSet *)fieldsToExclude
+{
+    NSUInteger fieldsCount = entity.fields.count;
+    
+    NSMutableSet *circularFromFields = [[NSMutableSet alloc] initWithCapacity:fieldsCount];
+    NSMutableSet *circularToFields = [[NSMutableSet alloc] initWithCapacity:fieldsCount];
+    
+    NSMutableSet *fieldsToSave = [[NSMutableSet alloc] initWithCapacity:fieldsCount];
+    
+    [self.scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityField *fromField, DBEntity *toEntity, DBEntityField *toField, BOOL *stop) {
+        if (![fieldsToExclude containsObject:fromField])
+        {
             if (fromField && fromField.property && fromField.column) {
-                id relatedObject = [object valueForKey:fromField.property];
-                [self save:relatedObject exceptRelations:circularRelations completion:nil];
+                
+                BOOL isCircularRelation = toField && toField.column;
+                if (isCircularRelation) {
+                    [circularFromFields addObject:fromField];
+                    [circularToFields addObject:toField];
+                }
+                
+                [fieldsToSave addObject:fromField];
             }
         }
+    }];
+    
+    for (DBEntityField *fromField in fieldsToSave) {
+        id relatedObject = [object valueForKey:fromField.property];
+        [self save:relatedObject exceptFields:circularToFields completion:nil];
     }
     
-    return circularRelations;
+    return circularFromFields;
 }
 
-- (void)saveCircularRelations:(NSSet *)relations inObject:(id)object withEntity:(DBEntity *)entity
+- (void)saveCircularFields:(NSSet *)fieldsToResave inObject:(id)object withEntity:(DBEntity *)entity
 {
-    /* Save one-to-one related objects again, since 'object' now saved and we have its idenitifer */
-    for (DBEntityRelation *relation in relations) {
-        id relatedObject = [object valueForKey:relation.fromEntityField.property];
-        [self save:relatedObject completion:nil];
-    }
+    /* Save to-one related objects again, since 'object' now saved and we have its idenitifer */
+    [self.scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityField *fromField, DBEntity *toEntity, DBEntityField *toField, BOOL *stop) {
+        if ([fieldsToResave containsObject:fromField]) {
+            id relatedObject = [object valueForKey:fromField.property];
+            [self updateObject:relatedObject withFields:[NSSet setWithObject:toField] error:nil];
+        }
+    }];
 }
 
 #pragma mark - Requests

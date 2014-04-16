@@ -10,6 +10,5 @@
 
 @implementation DBOneToManyRelation
 
-@synthesize toEntityField, fromEntityField;
 
 @end

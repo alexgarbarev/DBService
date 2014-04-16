@@ -11,6 +11,8 @@
 #import "DBEntityRelation.h"
 #import "DBManyToManyRelation.h"
 
+@class DBScheme;
+
 typedef struct {
     __unsafe_unretained NSString *query;
     __unsafe_unretained NSArray *args;
@@ -18,9 +20,11 @@ typedef struct {
 
 @interface DBQueryBuilder : NSObject
 
-- (DBQuery)queryToInsertObject:(id)object withEntity:(DBEntity *)entity tryReplace:(BOOL)replace;
-- (DBQuery)queryToUpdateObject:(id)object withEntity:(DBEntity *)entity;
-- (DBQuery)queryToDeleteObject:(id)object withEntity:(DBEntity *)entity;
+- (instancetype)initWithScheme:(DBScheme *)scheme;
+
+- (DBQuery)queryToInsertObject:(id)object withFields:(NSSet *)fields tryReplace:(BOOL)replace;
+- (DBQuery)queryToUpdateObject:(id)object withFields:(NSSet *)fields;
+- (DBQuery)queryToDeleteObject:(id)object;
 - (DBQuery)queryToDeleteRelation:(DBManyToManyRelation *)relation fromObject:(id)fromObject toObject:(id)toObject;
 - (DBQuery)queryToNullifyRelation:(DBEntityRelation *)relation fromObject:(id)fromObject toObject:(id)toObject;
 - (DBQuery)queryToSelectEntity:(DBEntity *)entity withPrimaryKey:(id)primaryKeyValue;

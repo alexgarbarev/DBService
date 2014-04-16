@@ -22,11 +22,11 @@ typedef NS_ENUM(NSInteger, DBEntityRelationDeleteRule) {
 
 ///Entity which refer to another (toEntity)
 @property (nonatomic, strong) DBEntity *fromEntity;
-@property (nonatomic, readonly) DBEntityField *fromEntityField;
+@property (nonatomic, strong) DBEntityField *fromEntityField;
 
 ///Entity referenced by 'toEntity'
 @property (nonatomic, strong) DBEntity *toEntity;
-@property (nonatomic, readonly) DBEntityField *toEntityField;
+@property (nonatomic, strong) DBEntityField *toEntityField;
 
 ///Rule to delete toEntity when deleting fromEntity
 @property (nonatomic) DBEntityRelationDeleteRule toEntityDeleteRule;

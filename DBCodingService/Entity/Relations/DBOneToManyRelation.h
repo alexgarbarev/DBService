@@ -10,10 +10,4 @@
 
 @interface DBOneToManyRelation : DBEntityRelation
 
-///Must be a field with nil column and collection typed property
-@property (nonatomic, strong) DBEntityField *fromEntityField;
-
-///Must be a field with column and optional property
-@property (nonatomic, strong) DBEntityField *toEntityField;
-
 @end

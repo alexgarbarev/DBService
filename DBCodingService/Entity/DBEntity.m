@@ -12,18 +12,9 @@
 
 @implementation DBEntity
 
-- (DBEntityRelation *)relationForField:(DBEntityField *)field
+- (BOOL)isEqualToEntity:(DBEntity *)entity
 {
-    DBEntityRelation *result = nil;
-    
-    for (DBEntityRelation *relation in self.relations) {
-        if ([relation.fromEntityField isEqualToField:field]) {
-            result = relation;
-            break;
-        }
-    }
-    
-    return result;
+    return [self isEqual:entity];
 }
 
 @end

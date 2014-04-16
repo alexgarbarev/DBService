@@ -11,19 +11,4 @@
 
 @implementation DBManyToManyRelation
 
-@synthesize fromEntityField;
-
-
-- (DBEntityField *)toEntityField
-{
-    DBEntityField *field = nil;
-    for (DBEntityRelation *relation in [self.toEntity relations]) {
-        if ([relation isCircularWithRelation:self]) {
-            field = relation.fromEntityField;
-            break;
-        }
-    }
-    return field;
-}
-
 @end

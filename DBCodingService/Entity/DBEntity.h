@@ -17,14 +17,11 @@ typedef int DBEntityColumnType;
 @property (nonatomic, strong) NSString *table;
 
 @property (nonatomic, strong) NSOrderedSet *fields;
-@property (nonatomic, strong) NSOrderedSet *relations;
 
 @property (nonatomic, strong) DBEntityField *primary;
 
 @property (nonatomic, strong) DBEntity *parent;
 @property (nonatomic, getter = isAbstract) BOOL abstract;
-
-- (DBEntityRelation *)relationForField:(DBEntityField *)field;
 
 - (BOOL)isEqualToEntity:(DBEntity *)entity;
 

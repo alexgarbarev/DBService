@@ -38,6 +38,7 @@
 		FA4321A018FDD90700387EFE /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B8639D2169EBE0B004C6490 /* ViewController.m */; };
 		FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B4E18F5E07B00A0F79F /* Message.m */; };
 		FA8E6B5218F5E08600A0F79F /* Attachment.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B5118F5E08600A0F79F /* Attachment.m */; };
+		FAE71D4C18FF2278008DE681 /* Icon.m in Sources */ = {isa = PBXBuildFile; fileRef = FAE71D4B18FF2278008DE681 /* Icon.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -109,6 +110,8 @@
 		FA8E6B4E18F5E07B00A0F79F /* Message.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Message.m; sourceTree = "<group>"; };
 		FA8E6B5018F5E08600A0F79F /* Attachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Attachment.h; sourceTree = "<group>"; };
 		FA8E6B5118F5E08600A0F79F /* Attachment.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Attachment.m; sourceTree = "<group>"; };
+		FAE71D4A18FF2278008DE681 /* Icon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Icon.h; sourceTree = "<group>"; };
+		FAE71D4B18FF2278008DE681 /* Icon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Icon.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -326,6 +329,8 @@
 				FA8E6B5118F5E08600A0F79F /* Attachment.m */,
 				5B2BED6818F6905000A089CA /* File.h */,
 				5B2BED6918F6905000A089CA /* File.m */,
+				FAE71D4A18FF2278008DE681 /* Icon.h */,
+				FAE71D4B18FF2278008DE681 /* Icon.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -487,6 +492,7 @@
 				FA43218C18FDA0CE00387EFE /* DBEntityRelation.m in Sources */,
 				FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */,
 				5B2BED6A18F6905000A089CA /* File.m in Sources */,
+				FAE71D4C18FF2278008DE681 /* Icon.m in Sources */,
 				FA43218618FD9AE800387EFE /* DBOneToManyRelation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

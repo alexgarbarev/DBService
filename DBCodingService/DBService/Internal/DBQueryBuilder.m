@@ -65,7 +65,7 @@
 {
     DBEntity *entity = [self.scheme entityForClass:[object class]];
 
-    NSAssert([self isEmptyPrimaryKey:[object valueForKeyPath:entity.primary.property]], @"Object must have non-empty primary key for UPDATE");
+    NSAssert(![self isEmptyPrimaryKey:[object valueForKeyPath:entity.primary.property]], @"Object must have non-empty primary key for UPDATE");
     
     NSMutableString *query = [NSMutableString stringWithFormat:@"UPDATE %@ SET ", [entity table]];
     NSMutableArray *args = [NSMutableArray array];

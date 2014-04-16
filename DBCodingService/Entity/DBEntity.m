@@ -17,4 +17,14 @@
     return [self isEqual:entity];
 }
 
+- (DBEntityField *)fieldWithColumn:(NSString *)column
+{
+    for (DBEntityField *field in self.fields) {
+        if ([field.column isEqualToString:column]) {
+            return field;
+        }
+    }
+    return nil;
+}
+
 @end

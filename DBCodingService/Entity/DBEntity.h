@@ -25,4 +25,6 @@ typedef int DBEntityColumnType;
 
 - (BOOL)isEqualToEntity:(DBEntity *)entity;
 
+- (DBEntityField *)fieldWithColumn:(NSString *)column;
+
 @end

@@ -173,7 +173,6 @@
     
     NSMutableSet *circularFromFields = [[NSMutableSet alloc] initWithCapacity:fieldsCount];
     NSMutableSet *circularToFields = [[NSMutableSet alloc] initWithCapacity:fieldsCount];
-    
     NSMutableSet *fieldsToSave = [[NSMutableSet alloc] initWithCapacity:fieldsCount];
     
     [self.scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityField *fromField, DBEntity *toEntity, DBEntityField *toField, BOOL *stop) {
@@ -181,10 +180,12 @@
         {
             if (fromField && fromField.property && fromField.column) {
                 
-                BOOL isCircularRelation = toField && toField.column;
+                BOOL isCircularRelation = toField && toField.column && toField.property;
                 if (isCircularRelation) {
-                    [circularFromFields addObject:fromField];
-                    [circularToFields addObject:toField];
+                    if ([[object valueForKey:fromField.property] valueForKey:toField.property] == object) {
+                        [circularFromFields addObject:fromField];
+                        [circularToFields addObject:toField];
+                    }
                 }
                 
                 [fieldsToSave addObject:fromField];
@@ -194,7 +195,9 @@
     
     for (DBEntityField *fromField in fieldsToSave) {
         id relatedObject = [object valueForKey:fromField.property];
-        [self save:relatedObject exceptFields:circularToFields completion:nil];
+        if (relatedObject) {
+            [self save:relatedObject exceptFields:circularToFields completion:nil];
+        }
     }
     
     return circularFromFields;
@@ -206,7 +209,9 @@
     [self.scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityField *fromField, DBEntity *toEntity, DBEntityField *toField, BOOL *stop) {
         if ([fieldsToResave containsObject:fromField]) {
             id relatedObject = [object valueForKey:fromField.property];
-            [self updateObject:relatedObject withFields:[NSSet setWithObject:toField] error:nil];
+            if (relatedObject) {
+                [self updateObject:relatedObject withFields:[NSSet setWithObject:toField] error:nil];
+            }
         }
     }];
 }

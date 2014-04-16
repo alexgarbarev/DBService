@@ -12,10 +12,13 @@
 #import "Message.h"
 #import "Attachment.h"
 #import "File.h"
+#import "Icon.h"
 #import "DBService.h"
 #import "DBScheme.h"
 #import "DBEntity.h"
 #import "DBEntityField.h"
+
+#import "DBOneToOneRelation.h"
 
 @interface ViewController ()
 
@@ -31,7 +34,8 @@
     [queue inDatabase:^(FMDatabase *db) {
         [db executeUpdate:@"CREATE TABLE message (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, text text)"];
         [db executeUpdate:@"CREATE TABLE attachment (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, messageId integer NOT NULL, comment text)"];
-        [db executeUpdate:@"CREATE TABLE file (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, file_size integer NOT NULL, mime text, path text)"];
+        [db executeUpdate:@"CREATE TABLE file (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, file_size integer NOT NULL, mime text, path text, icon_id INTEGER)"];
+        [db executeUpdate:@"CREATE TABLE icon (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, file_id integer NOT NULL, path text)"];
         [db executeUpdate:@"CREATE TABLE attachment_file (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, attachment_id integer NOT NULL, file_id integer NOT NULL)"];
     }];
 }
@@ -40,6 +44,24 @@
 {
     DBScheme *scheme = [[DBScheme alloc] init];
     
+    DBEntity *fileEntity = [self fieldEntity];
+    DBEntity *iconEntity = [self iconEntity];
+    [scheme registerEntity:fileEntity];
+    [scheme registerEntity:iconEntity];
+    
+    DBOneToOneRelation *relation = [DBOneToOneRelation new];
+    relation.fromEntity = fileEntity;
+    relation.fromEntityField = [fileEntity fieldWithColumn:@"icon_id"];
+    relation.toEntity = iconEntity;
+    relation.toEntityField = [iconEntity fieldWithColumn:@"file_id"];
+    
+    [scheme registerRelation:relation];
+    
+    return scheme;
+}
+
+- (DBEntity *)fieldEntity
+{
     DBEntity *fileEntity = [[DBEntity alloc] init];
     fileEntity.table = @"file";
     fileEntity.objectClass = [File class];
@@ -75,11 +97,51 @@
         field.property = @"filePath";
         [fields addObject:field];
     }
+    {
+        DBEntityField *field = [DBEntityField new];
+        field.type = DBEntityFieldTypeInteger32;
+        field.column = @"icon_id";
+        field.property = @"icon";
+        [fields addObject:field];
+    }
     fileEntity.fields = fields;
     
-    [scheme registerEntity:fileEntity];
+    return fileEntity;
+}
+
+- (DBEntity *)iconEntity
+{
+    DBEntity *iconEntity = [[DBEntity alloc] init];
+    iconEntity.table = @"icon";
+    iconEntity.objectClass = [Icon class];
     
-    return scheme;
+    NSMutableOrderedSet *fields = [NSMutableOrderedSet new];
+    {
+        DBEntityField *field = [DBEntityField new];
+        field.type = DBEntityFieldTypeInteger32;
+        field.column = @"id";
+        field.property = @"iconId";
+        [fields addObject:field];
+        
+        iconEntity.primary = field;
+    }
+    {
+        DBEntityField *field = [DBEntityField new];
+        field.type = DBEntityFieldTypeInteger32;
+        field.column = @"file_id";
+        field.property = @"file";
+        [fields addObject:field];
+    }
+    {
+        DBEntityField *field = [DBEntityField new];
+        field.type = DBEntityFieldTypeString;
+        field.column = @"path";
+        field.property = @"path";
+        [fields addObject:field];
+    }
+    iconEntity.fields = fields;
+    
+    return iconEntity;
 }
 
 - (void)viewDidLoad
@@ -101,6 +163,7 @@
     service = [[DBService alloc] initWithDatabaseQueue:queue scheme:[self newScheme]];
     
     [self testSingleSaving];
+    [self test_one_to_one];
 //    [self testOneToMany];
 //    [self testManyToMany];
     
@@ -127,6 +190,28 @@
         NSLog(@"saved (inserted=%d, id=%@, error=%@)",wasInserted, objectId, error);
     }];
 
+}
+
+- (void)test_one_to_one
+{
+    File *file = [[File alloc] init];
+    file.fileSize = 101;
+    file.filePath = @"file with icon";
+    file.mime = @"png";
+    
+    Icon *icon = [Icon new];
+    icon.path = @"icon!";
+    icon.file = file;
+//    file.icon = icon;
+    
+    Icon *icon2 = [Icon new];
+    icon2.path = @"icon2";
+    icon2.file = file;
+    file.icon = icon2;
+    
+    [service save:icon completion:^(BOOL wasInserted, id objectId, NSError *error) {
+        NSLog(@"saved (inserted=%d, id=%@, error=%@)",wasInserted, objectId, error);
+    }];
 }
 
 //- (void) testOneToMany

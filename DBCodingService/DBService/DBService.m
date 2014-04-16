@@ -18,6 +18,8 @@
 #import "DBScheme.h"
 #import "DBQueryBuilder.h"
 
+NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationException";
+
 @interface DBService ()
 
 @property (nonatomic, strong) FMDatabaseQueue *queue;
@@ -182,9 +184,12 @@
                 
                 BOOL isCircularRelation = toField && toField.column && toField.property;
                 if (isCircularRelation) {
-                    if ([[object valueForKey:fromField.property] valueForKey:toField.property] == object) {
+                    id relatedObject = [object valueForKey:fromField.property];
+                    if ([relatedObject valueForKey:toField.property] == object) {
                         [circularFromFields addObject:fromField];
                         [circularToFields addObject:toField];
+                    } else if (relatedObject) {
+                        [NSException raise:DBInvalidCircularRelationException format:@"Class %@ have circular relation with %@ class, but instances not points to each over (Property '%@' of %@ must point to %@ and property '%@' of %@ must point to %@)",entity.objectClass, toEntity.objectClass, fromField.property, object, [object valueForKey:fromField.property], toField.property, [object valueForKey:fromField.property], object];
                     }
                 }
                 

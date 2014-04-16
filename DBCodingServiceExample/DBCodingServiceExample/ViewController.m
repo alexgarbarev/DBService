@@ -54,6 +54,7 @@
     relation.fromEntityField = [fileEntity fieldWithColumn:@"icon_id"];
     relation.toEntity = iconEntity;
     relation.toEntityField = [iconEntity fieldWithColumn:@"file_id"];
+    relation.toEntityDeleteRule = DBEntityRelationDeleteRuleDeny;
     
     [scheme registerRelation:relation];
     
@@ -199,17 +200,21 @@
     file.filePath = @"file with icon";
     file.mime = @"png";
     
-    Icon *icon = [Icon new];
-    icon.path = @"icon!";
-    icon.file = file;
-//    file.icon = icon;
+    Icon *icon1 = [Icon new];
+    icon1.path = @"icon!";
+    icon1.file = file;
+    file.icon = icon1;
+    
+    [service save:icon1 completion:^(BOOL wasInserted, id objectId, NSError *error) {
+        NSLog(@"saved (inserted=%d, id=%@, error=%@)",wasInserted, objectId, error);
+    }];
     
     Icon *icon2 = [Icon new];
     icon2.path = @"icon2";
     icon2.file = file;
     file.icon = icon2;
     
-    [service save:icon completion:^(BOOL wasInserted, id objectId, NSError *error) {
+    [service save:file completion:^(BOOL wasInserted, id objectId, NSError *error) {
         NSLog(@"saved (inserted=%d, id=%@, error=%@)",wasInserted, objectId, error);
     }];
 }

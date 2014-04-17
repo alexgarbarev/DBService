@@ -201,7 +201,7 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
     
     NSMutableSet *circularRelations = [[NSMutableSet alloc] initWithCapacity:fieldsCount];
     NSMutableSet *fieldsToSave = [[NSMutableSet alloc] initWithCapacity:fieldsCount];
-    
+
     [self.scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityRelationRepresentation *relationRep, BOOL *stop) {
         DBEntityField *fromField = relationRep.fromField;
         DBEntityField *toField = relationRep.toField;
@@ -218,6 +218,8 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
                 }
                 
                 [fieldsToSave addObject:fromField];
+                
+                [self processOldValueForRelation:relationRep onObject:object];
             }
         }
     }];
@@ -229,7 +231,43 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
         }
     }
     
+    
     return circularRelations;
+}
+
+- (void)processOldValueForRelation:(DBEntityRelationRepresentation *)relation onObject:(id)object
+{
+    id objectPrimaryKey = [object valueForKey:relation.fromEntity.primary.property];
+    if (![self.queryBuilder isEmptyPrimaryKey:objectPrimaryKey]) {
+        DBQuery query = [self.queryBuilder queryToSelectField:relation.fromField withEntity:relation.fromEntity primaryKeyValue:objectPrimaryKey];
+        __block id oldValueId = nil;
+
+        [self executeBlock:^(FMDatabase *db) {
+            FMResultSet *result = [db executeQuery:query.query withArgumentsInArray:query.args];
+            if ([result next]) {
+                oldValueId = [result objectForColumnIndex:0];
+            }
+            [result close];
+        }];
+        
+        if (oldValueId && ![oldValueId isKindOfClass:[NSNull class]]) {
+            [self processChangeFromValueWithId:oldValueId entity:relation.toEntity nullifyField:relation.toField rule:relation.toEntityChangeRule];
+        }
+    }
+}
+
+- (void)processChangeFromValueWithId:(id)oldValueId entity:(DBEntity *)entity nullifyField:(DBEntityField *)field rule:(DBEntityRelationChangeRule)rule
+{
+    switch (rule) {
+        case DBEntityRelationChangeRuleNullify:
+            [self nullifyField:field onEntity:entity withPrimaryKeyValue:oldValueId];
+            break;
+        case DBEntityRelationChangeRuleCascade:
+            [self deleteObjectWithId:oldValueId andEntity:entity];
+            break;
+        default:
+            break;
+    }
 }
 
 - (void)saveCircularRelations:(NSSet *)circularRelations inObject:(id)object withEntity:(DBEntity *)entity
@@ -311,6 +349,20 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
     id primaryKey = [object valueForKey:entity.primary.property];
     NSAssert(![self.queryBuilder isEmptyPrimaryKey:primaryKey], @"Can't reload object, since object is not saved (empty primary key)");
     return [self fetchObjectWithId:primaryKey andEntity:entity];
+}
+
+- (void)deleteObjectWithId:(id)objectId andEntity:(DBEntity *)entity
+{
+    DBQuery query = [self.queryBuilder queryToDeleteObjectWithEntity:entity withPrimaryKey:objectId];
+    [self executeUpdate:query.query withArgumentsInArray:query.args];
+}
+
+- (void)nullifyField:(DBEntityField *)field onEntity:(DBEntity *)entity withPrimaryKeyValue:(id)primaryKeyValue
+{
+    NSAssert(field && field.column, @"Can't nullify field, since field or column are nil");
+    
+    DBQuery query = [self.queryBuilder queryToNullifyField:field withEntity:entity primaryKeyValue:primaryKeyValue];
+    [self executeUpdate:query.query withArgumentsInArray:query.args];
 }
 
 #pragma mark - Utils

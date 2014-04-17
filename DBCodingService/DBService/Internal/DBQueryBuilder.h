@@ -12,6 +12,7 @@
 #import "DBManyToManyRelation.h"
 
 @class DBScheme;
+@class DBEntityField;
 
 typedef struct {
     __unsafe_unretained NSString *query;
@@ -24,10 +25,11 @@ typedef struct {
 
 - (DBQuery)queryToInsertObject:(id)object withEntity:(DBEntity *)entity withFields:(NSSet *)fields tryReplace:(BOOL)replace;
 - (DBQuery)queryToUpdateObject:(id)object withEntity:(DBEntity *)entity withFields:(NSSet *)fields;
-- (DBQuery)queryToDeleteObject:(id)object withEntity:(DBEntity *)entity;
+- (DBQuery)queryToDeleteObjectWithEntity:(DBEntity *)entity withPrimaryKey:(id)primaryKeyValue;
 - (DBQuery)queryToDeleteRelation:(DBManyToManyRelation *)relation fromObject:(id)fromObject toObject:(id)toObject;
-- (DBQuery)queryToNullifyRelation:(DBEntityRelation *)relation fromObject:(id)fromObject toObject:(id)toObject;
+- (DBQuery)queryToNullifyField:(DBEntityField *)field withEntity:(DBEntity *)entity primaryKeyValue:(id)primaryKeyValue;
 - (DBQuery)queryToSelectEntity:(DBEntity *)entity withPrimaryKey:(id)primaryKeyValue;
+- (DBQuery)queryToSelectField:(DBEntityField *)field withEntity:(DBEntity *)entity primaryKeyValue:(id)primaryKeyValue;
 
 - (BOOL)isEmptyPrimaryKey:(id)primaryKey;
 

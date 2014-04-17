@@ -36,6 +36,14 @@
     return query;
 }
 
+- (DBQuery)queryToSelectField:(DBEntityField *)field withEntity:(DBEntity *)entity primaryKeyValue:(id)primaryKeyValue
+{
+    DBQuery query;
+    query.query = [NSString stringWithFormat:@"SELECT %@ FROM %@ WHERE %@ = ?", field.column, entity.table, entity.primary.column];
+    query.args = @[primaryKeyValue];
+    return query;
+}
+
 - (DBQuery)queryToInsertObject:(id)object withEntity:(DBEntity *)entity withFields:(NSSet *)fields tryReplace:(BOOL)replace
 {
     NSMutableString *query = [NSMutableString stringWithFormat:@"INSERT%@ INTO %@(",replace?@" OR REPLACE":@"",[entity table]];
@@ -87,11 +95,11 @@
     return queryStruct;
 }
 
-- (DBQuery)queryToDeleteObject:(id)object withEntity:(DBEntity *)entity
+- (DBQuery)queryToDeleteObjectWithEntity:(DBEntity *)entity withPrimaryKey:(id)primaryKeyValue
 {
     DBQuery query;
     query.query = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ = ?", entity.table, entity.primary.column];
-    query.args = @[[object valueForKey:entity.primary.property]];
+    query.args = @[primaryKeyValue];
     return query;
 }
 
@@ -103,11 +111,11 @@
     return query;
 }
 
-- (DBQuery)queryToNullifyRelation:(DBEntityRelation *)relation fromObject:(id)fromObject toObject:(id)toObject
+- (DBQuery)queryToNullifyField:(DBEntityField *)field withEntity:(DBEntity *)entity primaryKeyValue:(id)primaryKeyValue
 {
     DBQuery query;
-    query.query = [NSString stringWithFormat:@"UPDATE %@ SET %@ = ? WHERE %@ = ?",[relation.toEntity table], relation.toField.column, relation.toEntity.primary.column];
-    query.args = @[[NSNull null], [toObject valueForKey:relation.toEntity.primary.property]];
+    query.query = [NSString stringWithFormat:@"UPDATE %@ SET %@ = ? WHERE %@ = ?",[entity table], field.column, entity.primary.column];
+    query.args = @[[NSNull null], primaryKeyValue];
     return query;
 }
 

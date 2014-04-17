@@ -40,7 +40,7 @@
         [db executeUpdate:@"CREATE TABLE message (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, text text)"];
         [db executeUpdate:@"CREATE TABLE attachment (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, messageId integer NOT NULL, comment text)"];
         [db executeUpdate:@"CREATE TABLE file (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, file_size integer NOT NULL, mime text, path text, icon_id INTEGER)"];
-        [db executeUpdate:@"CREATE TABLE icon (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, file_id integer NOT NULL, path text)"];
+        [db executeUpdate:@"CREATE TABLE icon (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, file_id integer, path text)"];
         [db executeUpdate:@"CREATE TABLE attachment_file (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, attachment_id integer NOT NULL, file_id integer NOT NULL)"];
         
         [db executeUpdate:@"CREATE TABLE grandparent (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, name text)"];
@@ -64,6 +64,7 @@
     relation.fromField = [fileEntity fieldWithColumn:@"icon_id"];
     relation.toEntity = iconEntity;
     relation.toField = [iconEntity fieldWithColumn:@"file_id"];
+    relation.toEntityChangeRule = DBEntityRelationChangeRuleCascade;
     relation.toEntityDeleteRule = DBEntityRelationDeleteRuleDeny;
     
     [scheme registerRelation:relation];

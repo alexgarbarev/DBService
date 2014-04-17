@@ -26,6 +26,9 @@
 		5B8639EB169EBE0C004C6490 /* DBCodingServiceExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B8639EA169EBE0C004C6490 /* DBCodingServiceExampleTests.m */; };
 		5B863A13169EBFB7004C6490 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 5B863A12169EBFB7004C6490 /* libsqlite3.dylib */; };
 		FA06CF3018FC77B0006E94CF /* DBEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = FA06CF2F18FC77B0006E94CF /* DBEntity.m */; };
+		FA1E3A5A190050F200CD36CC /* DBEntityRelationRepresentation.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1E3A59190050F200CD36CC /* DBEntityRelationRepresentation.m */; };
+		FA1E3A5D1900669700CD36CC /* DBObjectDecoderFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1E3A5C1900669700CD36CC /* DBObjectDecoderFetcher.m */; };
+		FA1E3A631900698700CD36CC /* DBParentRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1E3A621900698700CD36CC /* DBParentRelation.m */; };
 		FA43217C18FD9AB600387EFE /* DBEntityField.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43217B18FD9AB600387EFE /* DBEntityField.m */; };
 		FA43218318FD9AD800387EFE /* DBOneToOneRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43218218FD9AD800387EFE /* DBOneToOneRelation.m */; };
 		FA43218618FD9AE800387EFE /* DBOneToManyRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43218518FD9AE800387EFE /* DBOneToManyRelation.m */; };
@@ -83,6 +86,12 @@
 		9D85D4DD77AA477A83449E27 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA06CF2E18FC77B0006E94CF /* DBEntity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBEntity.h; sourceTree = "<group>"; };
 		FA06CF2F18FC77B0006E94CF /* DBEntity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBEntity.m; sourceTree = "<group>"; };
+		FA1E3A58190050F200CD36CC /* DBEntityRelationRepresentation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBEntityRelationRepresentation.h; sourceTree = "<group>"; };
+		FA1E3A59190050F200CD36CC /* DBEntityRelationRepresentation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBEntityRelationRepresentation.m; sourceTree = "<group>"; };
+		FA1E3A5B1900669700CD36CC /* DBObjectDecoderFetcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBObjectDecoderFetcher.h; sourceTree = "<group>"; };
+		FA1E3A5C1900669700CD36CC /* DBObjectDecoderFetcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBObjectDecoderFetcher.m; sourceTree = "<group>"; };
+		FA1E3A611900698700CD36CC /* DBParentRelation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBParentRelation.h; sourceTree = "<group>"; };
+		FA1E3A621900698700CD36CC /* DBParentRelation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBParentRelation.m; sourceTree = "<group>"; };
 		FA43217A18FD9AB600387EFE /* DBEntityField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBEntityField.h; sourceTree = "<group>"; };
 		FA43217B18FD9AB600387EFE /* DBEntityField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBEntityField.m; sourceTree = "<group>"; };
 		FA43218118FD9AD800387EFE /* DBOneToOneRelation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBOneToOneRelation.h; sourceTree = "<group>"; };
@@ -265,6 +274,8 @@
 				FA43218518FD9AE800387EFE /* DBOneToManyRelation.m */,
 				FA43218718FD9AF400387EFE /* DBManyToManyRelation.h */,
 				FA43218818FD9AF400387EFE /* DBManyToManyRelation.m */,
+				FA1E3A611900698700CD36CC /* DBParentRelation.h */,
+				FA1E3A621900698700CD36CC /* DBParentRelation.m */,
 			);
 			path = Relations;
 			sourceTree = "<group>";
@@ -274,6 +285,8 @@
 			children = (
 				FA43218A18FDA0CE00387EFE /* DBEntityRelation.h */,
 				FA43218B18FDA0CE00387EFE /* DBEntityRelation.m */,
+				FA1E3A58190050F200CD36CC /* DBEntityRelationRepresentation.h */,
+				FA1E3A59190050F200CD36CC /* DBEntityRelationRepresentation.m */,
 			);
 			name = Base;
 			sourceTree = "<group>";
@@ -295,6 +308,8 @@
 				FA43219B18FDAEF600387EFE /* DBQueryBuilder.m */,
 				FA43219D18FDD8A600387EFE /* DBObjectDecoder.h */,
 				FA43219E18FDD8A600387EFE /* DBObjectDecoder.m */,
+				FA1E3A5B1900669700CD36CC /* DBObjectDecoderFetcher.h */,
+				FA1E3A5C1900669700CD36CC /* DBObjectDecoderFetcher.m */,
 			);
 			path = Internal;
 			sourceTree = "<group>";
@@ -477,6 +492,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA1E3A5A190050F200CD36CC /* DBEntityRelationRepresentation.m in Sources */,
 				FA43217C18FD9AB600387EFE /* DBEntityField.m in Sources */,
 				FA43219318FDA5E800387EFE /* DBScheme.m in Sources */,
 				5B8639C6169EBE0B004C6490 /* main.m in Sources */,
@@ -490,10 +506,12 @@
 				FA4321A018FDD90700387EFE /* ViewController.m in Sources */,
 				FA06CF3018FC77B0006E94CF /* DBEntity.m in Sources */,
 				FA43218C18FDA0CE00387EFE /* DBEntityRelation.m in Sources */,
+				FA1E3A631900698700CD36CC /* DBParentRelation.m in Sources */,
 				FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */,
 				5B2BED6A18F6905000A089CA /* File.m in Sources */,
 				FAE71D4C18FF2278008DE681 /* Icon.m in Sources */,
 				FA43218618FD9AE800387EFE /* DBOneToManyRelation.m in Sources */,
+				FA1E3A5D1900669700CD36CC /* DBObjectDecoderFetcher.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

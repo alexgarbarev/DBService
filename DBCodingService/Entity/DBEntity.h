@@ -10,6 +10,7 @@ typedef int DBEntityColumnType;
 
 @class DBEntityField;
 @class DBEntityRelation;
+@class DBParentRelation;
 
 @interface DBEntity : NSObject
 
@@ -20,7 +21,7 @@ typedef int DBEntityColumnType;
 
 @property (nonatomic, strong) DBEntityField *primary;
 
-@property (nonatomic, strong) DBEntity *parent;
+@property (nonatomic, strong) DBParentRelation *parentRelation;
 @property (nonatomic, getter = isAbstract) BOOL abstract;
 
 - (BOOL)isEqualToEntity:(DBEntity *)entity;

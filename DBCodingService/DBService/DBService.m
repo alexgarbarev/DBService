@@ -15,10 +15,24 @@
 #import "DBOneToOneRelation.h"
 #import "DBOneToManyRelation.h"
 #import "DBManyToManyRelation.h"
+#import "DBEntityRelationRepresentation.h"
 #import "DBScheme.h"
 #import "DBQueryBuilder.h"
+#import "DBObjectDecoderFetcher.h"
+#import "DBObjectDecoder.h"
 
 NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationException";
+
+#define CheckToOneRelation(field, entity) NSAssert(field.column && field.property, @"To-One relation must have column and property, but %@ have wrong relation on field %@",entity, field)
+
+static void CheckCircularRelation(id object, DBEntityRelationRepresentation *relationRepresentation)
+{
+    id relatedObject = [object valueForKey:relationRepresentation.fromField.property];
+    if (relatedObject && [relatedObject valueForKey:relationRepresentation.toField.property] != object) {
+        [NSException raise:DBInvalidCircularRelationException format:@"Class %@ have circular relation with %@ class, but instances not points to each over (Property '%@' of %@ must point to %@ and property '%@' of %@ must point to %@)",relationRepresentation.fromEntity.objectClass, relationRepresentation.toEntity.objectClass, relationRepresentation.fromField.property, object, [object valueForKey:relationRepresentation.fromField.property], relationRepresentation.toField.property, [object valueForKey:relationRepresentation.fromField.property], object];
+    }
+}
+
 
 @interface DBService ()
 
@@ -27,6 +41,7 @@ NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationExcept
 
 @property (nonatomic, strong) DBScheme *scheme;
 @property (nonatomic, strong) DBQueryBuilder *queryBuilder;
+@property (nonatomic, strong) DBObjectDecoder *objectDecoder;
 
 @end
 
@@ -57,6 +72,7 @@ NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationExcept
 - (void)commonDBServiceInit
 {
     self.queryBuilder = [[DBQueryBuilder alloc] initWithScheme:self.scheme];
+    self.objectDecoder = [[DBObjectDecoder alloc] initWithScheme:self.scheme];
 }
 
 #pragma mark - Working with FMDB
@@ -103,10 +119,10 @@ NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationExcept
 
 - (void)save:(id)object completion:(DBSaveCompletion)completion
 {
-    [self save:object exceptFields:nil completion:completion];
+    [self save:object exceptRelations:nil completion:completion];
 }
 
-- (void)save:(id)object exceptFields:(NSSet *)fieldsToExclude completion:(DBSaveCompletion)completion
+- (void)save:(id)object exceptRelations:(NSSet *)relationsToExclude completion:(DBSaveCompletion)completion
 {
     DBEntity *entity = [self.scheme entityForClass:[object class]];
 
@@ -115,14 +131,13 @@ NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationExcept
     id objectId = [object valueForKey:entity.primary.property];
     
     //1. Save one-to-one related objects
-    NSSet *circularFields = [self saveToOneRelatedObjectsInObject:object withEntity:entity exceptFields:fieldsToExclude];
+    NSSet *circularRelations = [self saveToOneRelatedObjectsInObject:object withEntity:entity exceptRelations:relationsToExclude];
     
-    NSSet *fieldsToSave = [[entity fields] set];
     //2. Save object itself
     if ([self isExistsObject:object withEntity:entity]) {
-        [self updateObject:object withFields:fieldsToSave error:&error];
+        [self updateObject:object withFields:[[entity fields] set] error:&error];
     } else {
-        id insertedId = [self insertObject:object withFields:fieldsToSave tryReplace:NO error:&error];
+        id insertedId = [self insertObject:object withFields:[[entity fields] set] tryReplace:NO error:&error];
         if ([self.queryBuilder isEmptyPrimaryKey:objectId] && insertedId) {
             objectId = insertedId;
             [object setValue:objectId forKey:entity.primary.property];
@@ -133,7 +148,7 @@ NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationExcept
     //4. Save many-to-many related objects
     
     //5. Save one-to-one circular references
-    [self saveCircularFields:circularFields inObject:object withEntity:entity];
+    [self saveCircularRelations:circularRelations inObject:object withEntity:entity];
     
     if (completion) {
         completion(wasInserted, objectId, error);
@@ -169,28 +184,26 @@ NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationExcept
 
 #pragma mark - Saving to-one relations
 
-- (NSSet *)saveToOneRelatedObjectsInObject:(id)object withEntity:(DBEntity *)entity exceptFields:(NSSet *)fieldsToExclude
+- (NSSet *)saveToOneRelatedObjectsInObject:(id)object withEntity:(DBEntity *)entity exceptRelations:(NSSet *)relationsToExclude
 {
     NSUInteger fieldsCount = entity.fields.count;
     
-    NSMutableSet *circularFromFields = [[NSMutableSet alloc] initWithCapacity:fieldsCount];
-    NSMutableSet *circularToFields = [[NSMutableSet alloc] initWithCapacity:fieldsCount];
+    NSMutableSet *circularRelations = [[NSMutableSet alloc] initWithCapacity:fieldsCount];
     NSMutableSet *fieldsToSave = [[NSMutableSet alloc] initWithCapacity:fieldsCount];
     
-    [self.scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityField *fromField, DBEntity *toEntity, DBEntityField *toField, BOOL *stop) {
-        if (![fieldsToExclude containsObject:fromField])
+    [self.scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityRelationRepresentation *relationRep, BOOL *stop) {
+        DBEntityField *fromField = relationRep.fromField;
+        DBEntityField *toField = relationRep.toField;
+        if (![relationsToExclude containsObject:relationRep.relation])
         {
-            if (fromField && fromField.property && fromField.column) {
-                
-                BOOL isCircularRelation = toField && toField.column && toField.property;
+            if (fromField) {
+                CheckToOneRelation(fromField, relationRep.fromEntity);
+
+                BOOL isCircularRelation = toField && relationRep.type == DBEntityRelationTypeOneToOne;
                 if (isCircularRelation) {
-                    id relatedObject = [object valueForKey:fromField.property];
-                    if ([relatedObject valueForKey:toField.property] == object) {
-                        [circularFromFields addObject:fromField];
-                        [circularToFields addObject:toField];
-                    } else if (relatedObject) {
-                        [NSException raise:DBInvalidCircularRelationException format:@"Class %@ have circular relation with %@ class, but instances not points to each over (Property '%@' of %@ must point to %@ and property '%@' of %@ must point to %@)",entity.objectClass, toEntity.objectClass, fromField.property, object, [object valueForKey:fromField.property], toField.property, [object valueForKey:fromField.property], object];
-                    }
+                    CheckToOneRelation(toField, relationRep.toEntity);
+                    CheckCircularRelation(object, relationRep);
+                    [circularRelations addObject:relationRep.relation];
                 }
                 
                 [fieldsToSave addObject:fromField];
@@ -201,22 +214,21 @@ NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationExcept
     for (DBEntityField *fromField in fieldsToSave) {
         id relatedObject = [object valueForKey:fromField.property];
         if (relatedObject) {
-            [self save:relatedObject exceptFields:circularToFields completion:nil];
+            [self save:relatedObject exceptRelations:circularRelations completion:nil];
         }
     }
     
-    return circularFromFields;
+    return circularRelations;
 }
 
-- (void)saveCircularFields:(NSSet *)fieldsToResave inObject:(id)object withEntity:(DBEntity *)entity
+- (void)saveCircularRelations:(NSSet *)circularRelations inObject:(id)object withEntity:(DBEntity *)entity
 {
     /* Save to-one related objects again, since 'object' now saved and we have its idenitifer */
-    [self.scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityField *fromField, DBEntity *toEntity, DBEntityField *toField, BOOL *stop) {
-        if ([fieldsToResave containsObject:fromField]) {
-            id relatedObject = [object valueForKey:fromField.property];
-            if (relatedObject) {
-                [self updateObject:relatedObject withFields:[NSSet setWithObject:toField] error:nil];
-            }
+    [circularRelations enumerateObjectsUsingBlock:^(DBEntityRelation *relation, BOOL *stop) {
+        DBEntityRelationRepresentation *representation = [relation representationFromEntity:entity];
+        id relatedObject = [object valueForKey:representation.fromField.property];
+        if (relatedObject) {
+            [self updateObject:relatedObject withFields:[NSSet setWithObject:representation.toField] error:nil];
         }
     }];
 }
@@ -241,6 +253,53 @@ NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationExcept
     }
     
     return exist;
+}
+
+#pragma mark - Fetches
+
+- (id)fetchObjectWithId:(id)objectId andClass:(Class)objectClass
+{
+    return [self fetchObjectWithId:objectId andEntity:[self.scheme entityForClass:objectClass]];
+}
+
+- (NSArray *)fetchObjectsOfClass:(Class)objectClass fromSQLQuery:(NSString *)query withArgs:(NSArray *)args
+{
+    return [self fetchObjectsOfEntity:[self.scheme entityForClass:objectClass] fromSQLQuery:query withArgs:args];
+}
+
+- (id)fetchObjectWithId:(id)objectId andEntity:(DBEntity *)entity
+{
+    __block id object = nil;
+    [self executeBlock:^(FMDatabase *db) {
+        DBObjectDecoderFetcher *fetcher = [[DBObjectDecoderFetcher alloc] initWithQueryBuilder:self.queryBuilder database:db];
+        object = [self.objectDecoder objectWithId:objectId entity:entity fromFetcher:fetcher];
+    }];
+    return object;
+}
+
+- (NSArray *)fetchObjectsOfEntity:(DBEntity *)entity fromSQLQuery:(NSString *)query withArgs:(NSArray *)args
+{
+    NSMutableArray *objects = [NSMutableArray new];
+    [self executeBlock:^(FMDatabase *db) {
+        DBObjectDecoderFetcher *fetcher = [[DBObjectDecoderFetcher alloc] initWithQueryBuilder:self.queryBuilder database:db];
+        
+        FMResultSet *resultSet = [db executeQuery:query withArgumentsInArray:args];
+        while ([resultSet next]) {
+            id object = [self.objectDecoder decodeObjectFromResultSet:resultSet withEntity:entity fetcher:fetcher options:0];
+            [objects addObject:object];
+        }
+        [resultSet close];
+        
+    }];
+    return objects;
+}
+
+- (id)reloadObject:(id)object
+{
+    DBEntity *entity = [self.scheme entityForClass:[object class]];
+    id primaryKey = [object valueForKey:entity.primary.property];
+    NSAssert(![self.queryBuilder isEmptyPrimaryKey:primaryKey], @"Can't reload object, since object is not saved (empty primary key)");
+    return [self fetchObjectWithId:primaryKey andEntity:entity];
 }
 
 #pragma mark - Utils

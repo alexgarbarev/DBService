@@ -16,4 +16,9 @@
     return [self isEqual:field];
 }
 
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"<DBEntityField %p, (column = %@, property = %@)>",self, self.column, self.property];
+}
+
 @end

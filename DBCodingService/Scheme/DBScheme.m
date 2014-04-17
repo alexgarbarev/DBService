@@ -11,6 +11,7 @@
 #import "DBEntityRelation.h"
 #import "DBOneToManyRelation.h"
 #import "DBOneToOneRelation.h"
+#import "DBEntityRelationRepresentation.h"
 
 @implementation DBScheme {
     NSMutableDictionary *entities;
@@ -49,7 +50,7 @@
     return [entities allValues];
 }
 
-- (void)enumerateToOneRelationsFromEntity:(DBEntity *)entity usingBlock:(void(^)(DBEntityField *fromField, DBEntity *toEntity, DBEntityField *toField, BOOL *stop))block
+- (void)enumerateRelationsFromEntity:(DBEntity *)entity usingBlock:(void(^)(DBEntityRelationRepresentation *, BOOL *stop))block
 {
     if (!block) {
         return;
@@ -57,15 +58,24 @@
     
     for (DBEntityRelation *relation in relations) {
         BOOL stop = NO;
-        if ([relation.toEntity isEqualToEntity:entity] && ([relation isKindOfClass:[DBOneToManyRelation class]] || [relation isKindOfClass:[DBOneToOneRelation class]])) {
-            block(relation.toEntityField, relation.fromEntity, relation.fromEntityField, &stop);
-        } else if ([relation.fromEntity isEqualToEntity:entity] && [relation isKindOfClass:[DBOneToOneRelation class]]) {
-            block(relation.fromEntityField, relation.toEntity, relation.toEntityField, &stop);
+        
+        if ([relation.toEntity isEqualToEntity:entity] || [relation.fromEntity isEqualToEntity:entity]) {
+            block([relation representationFromEntity:entity], &stop);
         }
+
         if (stop) {
             break;
         }
     }
+}
+
+- (void)enumerateToOneRelationsFromEntity:(DBEntity *)entity usingBlock:(void(^)(DBEntityRelationRepresentation *, BOOL *stop))block
+{
+    [self enumerateRelationsFromEntity:entity usingBlock:^(DBEntityRelationRepresentation *represent, BOOL *stop) {
+        if (represent.type == DBEntityRelationTypeManyToOne || represent.type == DBEntityRelationTypeOneToOne) {
+            block(represent, stop);
+        }
+    }];    
 }
 
 @end

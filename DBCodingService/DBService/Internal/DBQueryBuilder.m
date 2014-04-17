@@ -10,6 +10,7 @@
 #import "DBEntity.h"
 #import "DBEntityField.h"
 #import "DBScheme.h"
+#import "DBEntityRelationRepresentation.h"
 
 @interface DBQueryBuilder ()
 @property (nonatomic, strong) DBScheme *scheme;
@@ -108,7 +109,7 @@
 - (DBQuery)queryToNullifyRelation:(DBEntityRelation *)relation fromObject:(id)fromObject toObject:(id)toObject
 {
     DBQuery query;
-    query.query = [NSString stringWithFormat:@"UPDATE %@ SET %@ = ? WHERE %@ = ?",[relation.toEntity table], relation.toEntityField.column, relation.toEntity.primary.column];
+    query.query = [NSString stringWithFormat:@"UPDATE %@ SET %@ = ? WHERE %@ = ?",[relation.toEntity table], relation.toField.column, relation.toEntity.primary.column];
     query.args = @[[NSNull null], [toObject valueForKey:relation.toEntity.primary.property]];
     return query;
 }
@@ -118,9 +119,9 @@
 - (DBEntity *)entityForRelatedField:(DBEntityField *)field inEntity:(DBEntity *)entity
 {
     __block DBEntity *foreignEntity = nil;
-    [self.scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityField *fromField, DBEntity *toEntity, DBEntityField *toField, BOOL *stop) {
-        if ([field isEqualToField:fromField]) {
-            foreignEntity = toEntity;
+    [self.scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityRelationRepresentation *relation, BOOL *stop) {
+        if ([field isEqualToField:relation.fromField]) {
+            foreignEntity = relation.toEntity;
             *stop = YES;
         }
     }];

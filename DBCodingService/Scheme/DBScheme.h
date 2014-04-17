@@ -9,6 +9,7 @@
 @class DBEntity;
 @class DBEntityRelation;
 @class DBEntityField;
+@class DBEntityRelationRepresentation;
 
 @interface DBScheme : NSObject
 
@@ -17,16 +18,10 @@
 
 /**
  * Enumerates all to-one relations (one-to-one and many-to-one) using block. 
- *
- * @c fromField - field in specified entity
- *
- * @c toEntity - another related entity
- *
- * @c toField - field in @c'toEntity' which refers back 
- *
- * @note 'toField' will haven't column but have property for many-to-one relations
  */
-- (void)enumerateToOneRelationsFromEntity:(DBEntity *)entity usingBlock:(void(^)(DBEntityField *fromField, DBEntity *toEntity, DBEntityField *toField, BOOL *stop))block;
+- (void)enumerateToOneRelationsFromEntity:(DBEntity *)entity usingBlock:(void(^)(DBEntityRelationRepresentation *relation, BOOL *stop))block;
+
+- (void)enumerateRelationsFromEntity:(DBEntity *)entity usingBlock:(void(^)(DBEntityRelationRepresentation *, BOOL *stop))block;
 
 - (DBEntity *)entityForClass:(Class)objectClass;
 

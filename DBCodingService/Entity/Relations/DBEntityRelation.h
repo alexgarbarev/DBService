@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class DBEntityRelationRepresentation;
+
 typedef NS_ENUM(NSInteger, DBEntityRelationDeleteRule) {
     DBEntityRelationDeleteRuleNoAction,
     DBEntityRelationDeleteRuleNullify,
@@ -16,6 +18,7 @@ typedef NS_ENUM(NSInteger, DBEntityRelationDeleteRule) {
 };
 
 typedef NS_ENUM(NSInteger, DBEntityRelationChangeRule) {
+    DBEntityRelationChangeRuleNoAction,
     DBEntityRelationChangeRuleNullify,
     DBEntityRelationChangeRuleCascade,
 };
@@ -27,11 +30,11 @@ typedef NS_ENUM(NSInteger, DBEntityRelationChangeRule) {
 
 ///Entity which refer to another (toEntity)
 @property (nonatomic, strong) DBEntity *fromEntity;
-@property (nonatomic, strong) DBEntityField *fromEntityField;
+@property (nonatomic, strong) DBEntityField *fromField;
 
 ///Entity referenced by 'toEntity'
 @property (nonatomic, strong) DBEntity *toEntity;
-@property (nonatomic, strong) DBEntityField *toEntityField;
+@property (nonatomic, strong) DBEntityField *toField;
 
 ///Rule to delete toEntity when deleting fromEntity
 @property (nonatomic) DBEntityRelationDeleteRule toEntityDeleteRule;
@@ -44,6 +47,6 @@ typedef NS_ENUM(NSInteger, DBEntityRelationChangeRule) {
 
 - (BOOL)isEqualToRelation:(DBEntityRelation *)relation;
 
-- (BOOL)isCircularWithRelation:(DBEntityRelation *)relation;
+- (DBEntityRelationRepresentation *)representationFromEntity:(DBEntity *)entity;
 
 @end

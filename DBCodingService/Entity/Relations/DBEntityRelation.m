@@ -8,6 +8,7 @@
 
 #import "DBEntityRelation.h"
 #import "DBEntity.h"
+#import "DBEntityRelationRepresentation.h"
 
 @implementation DBEntityRelation
 
@@ -17,9 +18,9 @@
     return [self isEqual:relation];
 }
 
-- (BOOL)isCircularWithRelation:(DBEntityRelation *)relation
+- (DBEntityRelationRepresentation *)representationFromEntity:(DBEntity *)entity
 {
-    return [self.fromEntity isEqualToEntity:relation.toEntity] && [self.toEntity isEqualToEntity:relation.fromEntity];
+    return [[DBEntityRelationRepresentation alloc] initWithRelation:self fromEntity:entity];
 }
 
 @end

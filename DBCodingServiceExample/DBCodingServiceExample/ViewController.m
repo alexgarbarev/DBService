@@ -51,9 +51,9 @@
     
     DBOneToOneRelation *relation = [DBOneToOneRelation new];
     relation.fromEntity = fileEntity;
-    relation.fromEntityField = [fileEntity fieldWithColumn:@"icon_id"];
+    relation.fromField = [fileEntity fieldWithColumn:@"icon_id"];
     relation.toEntity = iconEntity;
-    relation.toEntityField = [iconEntity fieldWithColumn:@"file_id"];
+    relation.toField = [iconEntity fieldWithColumn:@"file_id"];
     relation.toEntityDeleteRule = DBEntityRelationDeleteRuleDeny;
     
     [scheme registerRelation:relation];
@@ -165,6 +165,7 @@
     
     [self testSingleSaving];
     [self test_one_to_one];
+    [self test_simple_fetch];
 //    [self testOneToMany];
 //    [self testManyToMany];
     
@@ -205,7 +206,7 @@
     icon1.file = file;
     file.icon = icon1;
     
-    [service save:icon1 completion:^(BOOL wasInserted, id objectId, NSError *error) {
+    [service save:file completion:^(BOOL wasInserted, id objectId, NSError *error) {
         NSLog(@"saved (inserted=%d, id=%@, error=%@)",wasInserted, objectId, error);
     }];
     
@@ -217,6 +218,13 @@
     [service save:file completion:^(BOOL wasInserted, id objectId, NSError *error) {
         NSLog(@"saved (inserted=%d, id=%@, error=%@)",wasInserted, objectId, error);
     }];
+}
+
+- (void)test_simple_fetch
+{
+    File *file = [service fetchObjectWithId:@(3) andClass:[File class]];
+    NSAssert(file.fileSize == 101, @"");
+    NSAssert([file.mime isEqualToString:@"png"], @"");
 }
 
 //- (void) testOneToMany

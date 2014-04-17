@@ -29,6 +29,9 @@
 		FA1E3A5A190050F200CD36CC /* DBEntityRelationRepresentation.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1E3A59190050F200CD36CC /* DBEntityRelationRepresentation.m */; };
 		FA1E3A5D1900669700CD36CC /* DBObjectDecoderFetcher.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1E3A5C1900669700CD36CC /* DBObjectDecoderFetcher.m */; };
 		FA1E3A631900698700CD36CC /* DBParentRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1E3A621900698700CD36CC /* DBParentRelation.m */; };
+		FA1E3A6619007C3E00CD36CC /* Grandparent.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1E3A6519007C3E00CD36CC /* Grandparent.m */; };
+		FA1E3A6919007C4500CD36CC /* Parent.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1E3A6819007C4500CD36CC /* Parent.m */; };
+		FA1E3A6C19007C4D00CD36CC /* Child.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1E3A6B19007C4D00CD36CC /* Child.m */; };
 		FA43217C18FD9AB600387EFE /* DBEntityField.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43217B18FD9AB600387EFE /* DBEntityField.m */; };
 		FA43218318FD9AD800387EFE /* DBOneToOneRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43218218FD9AD800387EFE /* DBOneToOneRelation.m */; };
 		FA43218618FD9AE800387EFE /* DBOneToManyRelation.m in Sources */ = {isa = PBXBuildFile; fileRef = FA43218518FD9AE800387EFE /* DBOneToManyRelation.m */; };
@@ -92,6 +95,12 @@
 		FA1E3A5C1900669700CD36CC /* DBObjectDecoderFetcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBObjectDecoderFetcher.m; sourceTree = "<group>"; };
 		FA1E3A611900698700CD36CC /* DBParentRelation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBParentRelation.h; sourceTree = "<group>"; };
 		FA1E3A621900698700CD36CC /* DBParentRelation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBParentRelation.m; sourceTree = "<group>"; };
+		FA1E3A6419007C3E00CD36CC /* Grandparent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Grandparent.h; sourceTree = "<group>"; };
+		FA1E3A6519007C3E00CD36CC /* Grandparent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Grandparent.m; sourceTree = "<group>"; };
+		FA1E3A6719007C4500CD36CC /* Parent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parent.h; sourceTree = "<group>"; };
+		FA1E3A6819007C4500CD36CC /* Parent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Parent.m; sourceTree = "<group>"; };
+		FA1E3A6A19007C4D00CD36CC /* Child.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Child.h; sourceTree = "<group>"; };
+		FA1E3A6B19007C4D00CD36CC /* Child.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Child.m; sourceTree = "<group>"; };
 		FA43217A18FD9AB600387EFE /* DBEntityField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBEntityField.h; sourceTree = "<group>"; };
 		FA43217B18FD9AB600387EFE /* DBEntityField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBEntityField.m; sourceTree = "<group>"; };
 		FA43218118FD9AD800387EFE /* DBOneToOneRelation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBOneToOneRelation.h; sourceTree = "<group>"; };
@@ -346,6 +355,12 @@
 				5B2BED6918F6905000A089CA /* File.m */,
 				FAE71D4A18FF2278008DE681 /* Icon.h */,
 				FAE71D4B18FF2278008DE681 /* Icon.m */,
+				FA1E3A6419007C3E00CD36CC /* Grandparent.h */,
+				FA1E3A6519007C3E00CD36CC /* Grandparent.m */,
+				FA1E3A6719007C4500CD36CC /* Parent.h */,
+				FA1E3A6819007C4500CD36CC /* Parent.m */,
+				FA1E3A6A19007C4D00CD36CC /* Child.h */,
+				FA1E3A6B19007C4D00CD36CC /* Child.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -498,6 +513,7 @@
 				5B8639C6169EBE0B004C6490 /* main.m in Sources */,
 				5B8639CA169EBE0B004C6490 /* AppDelegate.m in Sources */,
 				FA43219718FDA9F800387EFE /* DBService.m in Sources */,
+				FA1E3A6C19007C4D00CD36CC /* Child.m in Sources */,
 				FA43219C18FDAEF600387EFE /* DBQueryBuilder.m in Sources */,
 				FA8E6B5218F5E08600A0F79F /* Attachment.m in Sources */,
 				FA43219F18FDD8A600387EFE /* DBObjectDecoder.m in Sources */,
@@ -505,11 +521,13 @@
 				FA43218918FD9AF400387EFE /* DBManyToManyRelation.m in Sources */,
 				FA4321A018FDD90700387EFE /* ViewController.m in Sources */,
 				FA06CF3018FC77B0006E94CF /* DBEntity.m in Sources */,
+				FA1E3A6919007C4500CD36CC /* Parent.m in Sources */,
 				FA43218C18FDA0CE00387EFE /* DBEntityRelation.m in Sources */,
 				FA1E3A631900698700CD36CC /* DBParentRelation.m in Sources */,
 				FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */,
 				5B2BED6A18F6905000A089CA /* File.m in Sources */,
 				FAE71D4C18FF2278008DE681 /* Icon.m in Sources */,
+				FA1E3A6619007C3E00CD36CC /* Grandparent.m in Sources */,
 				FA43218618FD9AE800387EFE /* DBOneToManyRelation.m in Sources */,
 				FA1E3A5D1900669700CD36CC /* DBObjectDecoderFetcher.m in Sources */,
 			);

@@ -73,6 +73,7 @@
 {
     while (parentRelation) {
         FMResultSet *parentResultSet = [fetcher resultSetForPrimaryKeyValue:parentPrimaryKey andEntity:parentRelation.parentEntity];
+        [parentResultSet next];
         [self decodedObject:object withResultSet:parentResultSet entity:parentRelation.parentEntity fetcher:fetcher exceptRelations:nil];
         parentRelation = parentRelation.parentEntity.parentRelation;
         if (parentRelation) {

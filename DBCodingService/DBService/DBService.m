@@ -20,6 +20,7 @@
 #import "DBQueryBuilder.h"
 #import "DBObjectDecoderFetcher.h"
 #import "DBObjectDecoder.h"
+#import "DBParentRelation.h"
 
 NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationException";
 
@@ -126,6 +127,16 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
 {
     DBEntity *entity = [self.scheme entityForClass:[object class]];
 
+    [self save:object withEntity:entity exceptRelations:relationsToExclude completion:completion];
+}
+
+- (void)save:(id)object withEntity:(DBEntity *)entity exceptRelations:(NSSet *)relationsToExclude completion:(DBSaveCompletion)completion
+{
+    //0. Save as parent entity
+    if (entity.parentRelation) {
+        [self save:object withEntity:entity.parentRelation.parentEntity exceptRelations:nil completion:nil];
+    }
+    
     NSError *error = nil;
     BOOL wasInserted = NO;
     id objectId = [object valueForKey:entity.primary.property];
@@ -135,9 +146,9 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
     
     //2. Save object itself
     if ([self isExistsObject:object withEntity:entity]) {
-        [self updateObject:object withFields:[[entity fields] set] error:&error];
+        [self updateObject:object withEntity:entity withFields:[[entity fields] set] error:&error];
     } else {
-        id insertedId = [self insertObject:object withFields:[[entity fields] set] tryReplace:NO error:&error];
+        id insertedId = [self insertObject:object withEntity:entity withFields:[[entity fields] set] tryReplace:NO error:&error];
         if ([self.queryBuilder isEmptyPrimaryKey:objectId] && insertedId) {
             objectId = insertedId;
             [object setValue:objectId forKey:entity.primary.property];
@@ -155,9 +166,9 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
     }
 }
 
-- (void)updateObject:(id)object withFields:(NSSet *)fields error:(NSError **)error
+- (void)updateObject:(id)object withEntity:(DBEntity *)entity withFields:(NSSet *)fields error:(NSError **)error
 {
-    DBQuery query = [self.queryBuilder queryToUpdateObject:object withFields:fields];
+    DBQuery query = [self.queryBuilder queryToUpdateObject:object withEntity:entity withFields:fields];
     
     BOOL success = [self executeUpdate:query.query withArgumentsInArray:query.args];
     
@@ -166,11 +177,11 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
     }
 }
 
-- (id)insertObject:(id)object withFields:(NSSet *)fields tryReplace:(BOOL)replace error:(NSError **)error
+- (id)insertObject:(id)object withEntity:(DBEntity *)entity withFields:(NSSet *)fields tryReplace:(BOOL)replace error:(NSError **)error
 {
     id insertedId = nil;
     
-    DBQuery query = [self.queryBuilder queryToInsertObject:object withFields:fields tryReplace:replace];
+    DBQuery query = [self.queryBuilder queryToInsertObject:object withEntity:entity withFields:fields tryReplace:replace];
     BOOL success = [self executeUpdate:query.query withArgumentsInArray:query.args];
     
     if (!success) {
@@ -228,7 +239,7 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
         DBEntityRelationRepresentation *representation = [relation representationFromEntity:entity];
         id relatedObject = [object valueForKey:representation.fromField.property];
         if (relatedObject) {
-            [self updateObject:relatedObject withFields:[NSSet setWithObject:representation.toField] error:nil];
+            [self updateObject:relatedObject withEntity:representation.toEntity withFields:[NSSet setWithObject:representation.toField] error:nil];
         }
     }];
 }

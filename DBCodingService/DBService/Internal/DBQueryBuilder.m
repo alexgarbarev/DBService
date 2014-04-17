@@ -11,6 +11,7 @@
 #import "DBEntityField.h"
 #import "DBScheme.h"
 #import "DBEntityRelationRepresentation.h"
+#import "DBParentRelation.h"
 
 @interface DBQueryBuilder ()
 @property (nonatomic, strong) DBScheme *scheme;
@@ -35,9 +36,8 @@
     return query;
 }
 
-- (DBQuery)queryToInsertObject:(id)object withFields:(NSSet *)fields tryReplace:(BOOL)replace
+- (DBQuery)queryToInsertObject:(id)object withEntity:(DBEntity *)entity withFields:(NSSet *)fields tryReplace:(BOOL)replace
 {
-    DBEntity *entity = [self.scheme entityForClass:[object class]];
     NSMutableString *query = [NSMutableString stringWithFormat:@"INSERT%@ INTO %@(",replace?@" OR REPLACE":@"",[entity table]];
     NSMutableArray *args = [NSMutableArray array];
     
@@ -62,10 +62,8 @@
     return queryStruct;
 }
 
-- (DBQuery)queryToUpdateObject:(id)object withFields:(NSSet *)fields
+- (DBQuery)queryToUpdateObject:(id)object withEntity:(DBEntity *)entity withFields:(NSSet *)fields
 {
-    DBEntity *entity = [self.scheme entityForClass:[object class]];
-
     NSAssert(![self isEmptyPrimaryKey:[object valueForKeyPath:entity.primary.property]], @"Object must have non-empty primary key for UPDATE");
     
     NSMutableString *query = [NSMutableString stringWithFormat:@"UPDATE %@ SET ", [entity table]];
@@ -89,9 +87,8 @@
     return queryStruct;
 }
 
-- (DBQuery)queryToDeleteObject:(id)object
+- (DBQuery)queryToDeleteObject:(id)object withEntity:(DBEntity *)entity
 {
-    DBEntity *entity = [self.scheme entityForClass:[object class]];
     DBQuery query;
     query.query = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ = ?", entity.table, entity.primary.column];
     query.args = @[[object valueForKey:entity.primary.property]];
@@ -119,12 +116,14 @@
 - (DBEntity *)entityForRelatedField:(DBEntityField *)field inEntity:(DBEntity *)entity
 {
     __block DBEntity *foreignEntity = nil;
+    
     [self.scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityRelationRepresentation *relation, BOOL *stop) {
         if ([field isEqualToField:relation.fromField]) {
             foreignEntity = relation.toEntity;
             *stop = YES;
         }
     }];
+    
     return foreignEntity;
 }
 
@@ -152,6 +151,13 @@
             
             block(value, field.column, index);
             index++;
+        }
+    }
+    
+    if (entity.parentRelation && [fields containsObject:entity.parentRelation.childColumnField]) {
+        id parentId = [object valueForKey:entity.parentRelation.parentEntity.primary.property];
+        if (parentId) {
+            block(parentId, entity.parentRelation.childColumnField.column, index++);
         }
     }
 }

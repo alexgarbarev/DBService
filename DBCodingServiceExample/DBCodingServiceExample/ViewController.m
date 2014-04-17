@@ -17,6 +17,11 @@
 #import "DBScheme.h"
 #import "DBEntity.h"
 #import "DBEntityField.h"
+#import "DBParentRelation.h"
+
+#import "Parent.h"
+#import "Grandparent.h"
+#import "Child.h"
 
 #import "DBOneToOneRelation.h"
 
@@ -37,6 +42,11 @@
         [db executeUpdate:@"CREATE TABLE file (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, file_size integer NOT NULL, mime text, path text, icon_id INTEGER)"];
         [db executeUpdate:@"CREATE TABLE icon (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, file_id integer NOT NULL, path text)"];
         [db executeUpdate:@"CREATE TABLE attachment_file (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, attachment_id integer NOT NULL, file_id integer NOT NULL)"];
+        
+        [db executeUpdate:@"CREATE TABLE grandparent (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, name text)"];
+        [db executeUpdate:@"CREATE TABLE parent (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, grandparent_id integer NOT NULL, name text)"];
+        [db executeUpdate:@"CREATE TABLE child (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, parent_id integer NOT NULL, name)"];
+
     }];
 }
 
@@ -57,6 +67,22 @@
     relation.toEntityDeleteRule = DBEntityRelationDeleteRuleDeny;
     
     [scheme registerRelation:relation];
+    
+    DBEntity *child = [self child];
+    DBEntity *parent = [self parent];
+    DBEntity *grandparent = [self grandparent];
+    
+    child.parentRelation = [DBParentRelation new];
+    child.parentRelation.parentEntity = parent;
+    child.parentRelation.childColumnField = [child fieldWithColumn:@"parent_id"];
+
+    parent.parentRelation = [DBParentRelation new];
+    parent.parentRelation.parentEntity = grandparent;
+    parent.parentRelation.childColumnField = [parent fieldWithColumn:@"grandparent_id"];
+
+    [scheme registerEntity:grandparent];
+    [scheme registerEntity:parent];
+    [scheme registerEntity:child];
     
     return scheme;
 }
@@ -145,6 +171,102 @@
     return iconEntity;
 }
 
+- (DBEntity *)grandparent
+{
+    DBEntity *parent = [[DBEntity alloc] init];
+    parent.table = @"grandparent";
+    parent.objectClass = [Grandparent class];
+    
+    NSMutableOrderedSet *fields = [NSMutableOrderedSet new];
+    {
+        DBEntityField *field = [DBEntityField new];
+        field.type = DBEntityFieldTypeInteger32;
+        field.column = @"id";
+        field.property = @"grandId";
+        [fields addObject:field];
+        
+        parent.primary = field;
+    }
+    {
+        DBEntityField *field = [DBEntityField new];
+        field.type = DBEntityFieldTypeString;
+        field.column = @"name";
+        field.property = @"grandparent";
+        [fields addObject:field];
+    }
+    parent.fields = fields;
+    
+    return parent;
+}
+
+- (DBEntity *)parent
+{
+    DBEntity *parent = [[DBEntity alloc] init];
+    parent.table = @"parent";
+    parent.objectClass = [Parent class];
+    
+    NSMutableOrderedSet *fields = [NSMutableOrderedSet new];
+    {
+        DBEntityField *field = [DBEntityField new];
+        field.type = DBEntityFieldTypeInteger32;
+        field.column = @"id";
+        field.property = @"parentId";
+        [fields addObject:field];
+        
+        parent.primary = field;
+    }
+    {
+        DBEntityField *field = [DBEntityField new];
+        field.type = DBEntityFieldTypeString;
+        field.column = @"name";
+        field.property = @"parent";
+        [fields addObject:field];
+    }
+    {
+        DBEntityField *field = [DBEntityField new];
+        field.type = DBEntityFieldTypeInteger32;
+        field.column = @"grandparent_id";
+        [fields addObject:field];
+    }
+    parent.fields = fields;
+    
+    return parent;
+}
+
+- (DBEntity *)child
+{
+    DBEntity *child = [[DBEntity alloc] init];
+    child.table = @"child";
+    child.objectClass = [Child class];
+    
+    NSMutableOrderedSet *fields = [NSMutableOrderedSet new];
+    {
+        DBEntityField *field = [DBEntityField new];
+        field.type = DBEntityFieldTypeInteger32;
+        field.column = @"id";
+        field.property = @"parentId";
+        [fields addObject:field];
+        
+        child.primary = field;
+    }
+    {
+        DBEntityField *field = [DBEntityField new];
+        field.type = DBEntityFieldTypeString;
+        field.column = @"name";
+        field.property = @"child";
+        [fields addObject:field];
+    }
+    {
+        DBEntityField *field = [DBEntityField new];
+        field.type = DBEntityFieldTypeInteger32;
+        field.column = @"parent_id";
+        [fields addObject:field];
+    }
+    child.fields = fields;
+    
+    return child;
+}
+
 - (void)viewDidLoad
 {
     NSString *documentsDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
@@ -168,6 +290,7 @@
     [self test_simple_fetch];
 //    [self testOneToMany];
 //    [self testManyToMany];
+    [self test_parent_relations];
     
     [super viewDidLoad];
 }
@@ -225,6 +348,29 @@
     File *file = [service fetchObjectWithId:@(3) andClass:[File class]];
     NSAssert(file.fileSize == 101, @"");
     NSAssert([file.mime isEqualToString:@"png"], @"");
+    
+    NSArray *allFiles = [service fetchObjectsOfClass:[File class] fromSQLQuery:@"SELECT * FROM file" withArgs:nil];
+    NSAssert([allFiles count] == 3, @"");
+}
+
+- (void)test_parent_relations
+{
+    Child *child = [Child new];
+    child.parent = @"Parent";
+    child.child = @"Child";
+    child.grandparent = @"GrandParent";
+    
+    __block id insertedId = nil;
+    [service save:child completion:^(BOOL wasInserted, id objectId, NSError *error) {
+        NSLog(@"Child saved (inserted=%d, id=%@, error=%@)",wasInserted, objectId, error);
+        insertedId = objectId;
+
+    }];
+    
+    Child *newChild = [service fetchObjectWithId:insertedId andClass:[Child class]];
+    NSAssert([newChild.parent isEqualToString:@"Parent"], @"");
+    NSAssert([newChild.child isEqualToString:@"Child"], @"");
+    NSAssert([newChild.grandparent isEqualToString:@"GrandParent"], @"");
 }
 
 //- (void) testOneToMany

@@ -163,7 +163,8 @@ static NSString *StringWithSqliteArgumentPlaceholder(NSInteger numberOfArguments
         }];
         if (objectsClass) {
             NSString *idsPlaceholder = StringWithSqliteArgumentPlaceholder([savedIdentifiers count]);
-            [self deleteOneToManyObjectsOfClass:objectsClass withForeignKey:foreignKey where:[NSString stringWithFormat:@"%@ NOT IN (%@)",[objectsClass dbPKColumn], idsPlaceholder] args:savedIdentifiers];
+            [savedIdentifiers insertObject:objectId atIndex:0];
+            [self deleteOneToManyObjectsOfClass:objectsClass withForeignKey:foreignKey where:[NSString stringWithFormat:@"%@ = ? AND %@ NOT IN (%@)", foreignKey, [objectsClass dbPKColumn], idsPlaceholder] args:savedIdentifiers];
         }
         [savedIdentifiers removeAllObjects];
         objectsClass = nil;

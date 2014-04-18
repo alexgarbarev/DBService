@@ -39,19 +39,19 @@
     if (primaryKeyValue && ![primaryKeyValue isKindOfClass:[NSNull class]]) {
         id<DBDatabaseResult> result = [fetcher resultForPrimaryKeyValue:primaryKeyValue andEntity:entity];
         if ([result next]) {
-            object = [self decodeObjectFromResult:result withEntity:entity fetcher:fetcher options:0 exceptRelations:relationsToExclude];
+            object = [self decodeObjectFromResult:result withEntity:entity fetcher:fetcher exceptRelations:relationsToExclude];
         }
         [result close];
     }
     return object;
 }
 
-- (id)fetchObjectFromResult:(id<DBDatabaseResult>)resultSet entity:(DBEntity *)entity provider:(DBDatabaseProvider *)fetcher options:(DBObjectDecoderOptions)options
+- (id)fetchObjectFromResult:(id<DBDatabaseResult>)resultSet entity:(DBEntity *)entity provider:(DBDatabaseProvider *)fetcher
 {
-    return [self decodeObjectFromResult:resultSet withEntity:entity fetcher:fetcher options:options exceptRelations:nil];
+    return [self decodeObjectFromResult:resultSet withEntity:entity fetcher:fetcher exceptRelations:nil];
 }
 
-- (id)decodeObjectFromResult:(id<DBDatabaseResult>)resultSet withEntity:(DBEntity *)entity fetcher:(DBDatabaseProvider *)fetcher options:(DBObjectDecoderOptions)options exceptRelations:(NSSet *)relationsToExclude
+- (id)decodeObjectFromResult:(id<DBDatabaseResult>)resultSet withEntity:(DBEntity *)entity fetcher:(DBDatabaseProvider *)fetcher exceptRelations:(NSSet *)relationsToExclude
 {
     NSAssert(!entity.abstract, @"Can't decode object of abstract entity");
     

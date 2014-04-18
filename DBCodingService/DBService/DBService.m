@@ -108,7 +108,7 @@
     [self executeBlock:^(DBDatabaseProvider *provider) {
         id<DBDatabaseResult> result = [provider resultFromQuery:query withArgs:args];
         while ([result next]) {
-            id object = [self.objectFetcher fetchObjectFromResult:result entity:entity provider:provider options:0];
+            id object = [self.objectFetcher fetchObjectFromResult:result entity:entity provider:provider];
             [objects addObject:object];
         }
         [result close];

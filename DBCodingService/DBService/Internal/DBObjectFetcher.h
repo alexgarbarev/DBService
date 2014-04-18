@@ -21,7 +21,7 @@ typedef NSUInteger DBObjectDecoderOptions;
 
 - (instancetype)initWithScheme:(DBScheme *)scheme;
 
-- (id)fetchObjectFromResult:(id<DBDatabaseResult>)resultSet entity:(DBEntity *)entity provider:(DBDatabaseProvider *)fetcher options:(DBObjectDecoderOptions)options;
+- (id)fetchObjectFromResult:(id<DBDatabaseResult>)resultSet entity:(DBEntity *)entity provider:(DBDatabaseProvider *)fetcher;
 
 - (id)fetchObjectWithId:(id)primaryKeyValue entity:(DBEntity *)entity provider:(DBDatabaseProvider *)fetcher;
 

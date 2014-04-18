@@ -44,6 +44,14 @@
     return query;
 }
 
+- (DBQuery)queryToSelectLatestPrimaryKeyForEntity:(DBEntity *)entity
+{
+    DBQuery query;
+    query.query = [NSString stringWithFormat:@"SELECT %@ FORM %@ ORDER BY %@ DESC LIMIT 1", entity.primary.column, entity.table, entity.primary.column];
+    query.args = nil;
+    return query;    
+}
+
 - (DBQuery)queryToInsertObject:(id)object withEntity:(DBEntity *)entity withFields:(NSSet *)fields tryReplace:(BOOL)replace
 {
     NSMutableString *query = [NSMutableString stringWithFormat:@"INSERT%@ INTO %@(",replace?@" OR REPLACE":@"",[entity table]];
@@ -72,7 +80,7 @@
 
 - (DBQuery)queryToUpdateObject:(id)object withEntity:(DBEntity *)entity withFields:(NSSet *)fields
 {
-    NSAssert(![self isEmptyPrimaryKey:[object valueForKeyPath:entity.primary.property]], @"Object must have non-empty primary key for UPDATE");
+    NSAssert(![DBEntity isEmptyPrimaryKey:[object valueForKeyPath:entity.primary.property]], @"Object must have non-empty primary key for UPDATE");
     
     NSMutableString *query = [NSMutableString stringWithFormat:@"UPDATE %@ SET ", [entity table]];
     NSMutableArray *args = [NSMutableArray array];
@@ -149,7 +157,7 @@
                 value = [value valueForKey:foreignEntity.primary.property];
             }
             
-            if ([entity.primary isEqualToField:field] && [self isEmptyPrimaryKey:value]) {
+            if ([entity.primary isEqualToField:field] && [DBEntity isEmptyPrimaryKey:value]) {
                 value = nil;
             }
             
@@ -168,13 +176,6 @@
             block(parentId, entity.parentRelation.childColumnField.column, index++);
         }
     }
-}
-
-- (BOOL)isEmptyPrimaryKey:(id)primaryKey
-{
-    return primaryKey == nil
-    || ([primaryKey isKindOfClass:[NSNumber class]] && [primaryKey integerValue] == 0)
-    || ([primaryKey isKindOfClass:[NSString class]] && [primaryKey length] == 0);
 }
 
 

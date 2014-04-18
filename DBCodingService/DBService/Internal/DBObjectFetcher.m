@@ -7,7 +7,6 @@
 //
 
 #import "DBObjectFetcher.h"
-#import "FMResultSet.h"
 #import "DBEntity.h"
 #import "DBScheme.h"
 #import "DBEntityField.h"
@@ -38,21 +37,21 @@
 {
     id object = nil;
     if (primaryKeyValue && ![primaryKeyValue isKindOfClass:[NSNull class]]) {
-        FMResultSet *objectResultSet = [fetcher resultSetForPrimaryKeyValue:primaryKeyValue andEntity:entity];
-        if ([objectResultSet next]) {
-            object = [self decodeObjectFromResultSet:objectResultSet withEntity:entity fetcher:fetcher options:0 exceptRelations:relationsToExclude];
+        id<DBDatabaseResult> result = [fetcher resultForPrimaryKeyValue:primaryKeyValue andEntity:entity];
+        if ([result next]) {
+            object = [self decodeObjectFromResult:result withEntity:entity fetcher:fetcher options:0 exceptRelations:relationsToExclude];
         }
-        [objectResultSet close];
+        [result close];
     }
     return object;
 }
 
-- (id)fetchObjectFromResultSet:(FMResultSet *)resultSet entity:(DBEntity *)entity provider:(DBDatabaseProvider *)fetcher options:(DBObjectDecoderOptions)options
+- (id)fetchObjectFromResult:(id<DBDatabaseResult>)resultSet entity:(DBEntity *)entity provider:(DBDatabaseProvider *)fetcher options:(DBObjectDecoderOptions)options
 {
-    return [self decodeObjectFromResultSet:resultSet withEntity:entity fetcher:fetcher options:options exceptRelations:nil];
+    return [self decodeObjectFromResult:resultSet withEntity:entity fetcher:fetcher options:options exceptRelations:nil];
 }
 
-- (id)decodeObjectFromResultSet:(FMResultSet *)resultSet withEntity:(DBEntity *)entity fetcher:(DBDatabaseProvider *)fetcher options:(DBObjectDecoderOptions)options exceptRelations:(NSSet *)relationsToExclude
+- (id)decodeObjectFromResult:(id<DBDatabaseResult>)resultSet withEntity:(DBEntity *)entity fetcher:(DBDatabaseProvider *)fetcher options:(DBObjectDecoderOptions)options exceptRelations:(NSSet *)relationsToExclude
 {
     NSAssert(!entity.abstract, @"Can't decode object of abstract entity");
     
@@ -72,7 +71,7 @@
 - (void)decodeParentWithId:(id)parentPrimaryKey inObject:(id)object withParentRelation:(DBParentRelation *)parentRelation fetcher:(DBDatabaseProvider *)fetcher
 {
     while (parentRelation) {
-        FMResultSet *parentResultSet = [fetcher resultSetForPrimaryKeyValue:parentPrimaryKey andEntity:parentRelation.parentEntity];
+        id<DBDatabaseResult> parentResultSet = [fetcher resultForPrimaryKeyValue:parentPrimaryKey andEntity:parentRelation.parentEntity];
         [parentResultSet next];
         [self decodedObject:object withResultSet:parentResultSet entity:parentRelation.parentEntity fetcher:fetcher exceptRelations:nil];
         parentRelation = parentRelation.parentEntity.parentRelation;
@@ -83,14 +82,14 @@
     }
 }
 
-- (void)decodedObject:(id)object withResultSet:(FMResultSet *)resultSet entity:(DBEntity *)entity fetcher:(DBDatabaseProvider *)fetcher exceptRelations:(NSSet *)relationsToExclude
+- (void)decodedObject:(id)object withResultSet:(id<DBDatabaseResult>)resultSet entity:(DBEntity *)entity fetcher:(DBDatabaseProvider *)fetcher exceptRelations:(NSSet *)relationsToExclude
 {
     [self writeObject:object fromResultSet:resultSet usingEntity:entity];
     [self resolveToOneRelationsInObject:object usingEntity:entity andResultSet:resultSet fetcher:fetcher exceptRelations:relationsToExclude];
     [self resolveToManyRelationsInObject:object usingEntity:entity andResultSet:resultSet fetcher:fetcher];
 }
 
-- (void)writeObject:(id)object fromResultSet:(FMResultSet *)resultSet usingEntity:(DBEntity *)entity
+- (void)writeObject:(id)object fromResultSet:(id<DBDatabaseResult>)resultSet usingEntity:(DBEntity *)entity
 {
     NSMutableSet *fieldsToWrite = [[[entity fields] set] mutableCopy];
     [fieldsToWrite minusSet:[self fieldsWithRelationsFromEntity:entity]];
@@ -105,7 +104,9 @@
     }
 }
 
-- (void)resolveToOneRelationsInObject:(id)object usingEntity:(DBEntity *)entity andResultSet:(FMResultSet *)resultSet fetcher:(DBDatabaseProvider *)fetcher exceptRelations:(NSSet *)relationsToExclude
+#pragma mark - Resolving Relations
+
+- (void)resolveToOneRelationsInObject:(id)object usingEntity:(DBEntity *)entity andResultSet:(id<DBDatabaseResult>)resultSet fetcher:(DBDatabaseProvider *)fetcher exceptRelations:(NSSet *)relationsToExclude
 {
     NSMutableSet *relationsToResolve = [NSMutableSet new];
     NSMutableSet *circularRelations = [NSMutableSet new];
@@ -128,10 +129,12 @@
     }
 }
 
-- (void)resolveToManyRelationsInObject:(id)object usingEntity:(DBEntity *)entity andResultSet:(FMResultSet *)resultSet fetcher:(DBDatabaseProvider *)fetcher
+- (void)resolveToManyRelationsInObject:(id)object usingEntity:(DBEntity *)entity andResultSet:(id<DBDatabaseResult>)resultSet fetcher:(DBDatabaseProvider *)fetcher
 {
     
 }
+
+#pragma mark - Fields with Relations
 
 - (NSSet *)fieldsWithRelationsFromEntity:(DBEntity *)entity
 {

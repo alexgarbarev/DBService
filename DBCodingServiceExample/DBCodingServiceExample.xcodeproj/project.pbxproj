@@ -134,6 +134,7 @@
 		FA8E6B4E18F5E07B00A0F79F /* Message.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Message.m; sourceTree = "<group>"; };
 		FA8E6B5018F5E08600A0F79F /* Attachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Attachment.h; sourceTree = "<group>"; };
 		FA8E6B5118F5E08600A0F79F /* Attachment.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Attachment.m; sourceTree = "<group>"; };
+		FAE589061901A698006A1136 /* DBDatabaseResult.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBDatabaseResult.h; sourceTree = "<group>"; };
 		FAE71D4A18FF2278008DE681 /* Icon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Icon.h; sourceTree = "<group>"; };
 		FAE71D4B18FF2278008DE681 /* Icon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Icon.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -271,6 +272,7 @@
 		5BCD08DD190169E700EB586F /* Database Provider */ = {
 			isa = PBXGroup;
 			children = (
+				FAE589061901A698006A1136 /* DBDatabaseResult.h */,
 				FA1E3A5B1900669700CD36CC /* DBDatabaseProvider.h */,
 				FA1E3A5C1900669700CD36CC /* DBDatabaseProvider.m */,
 			);

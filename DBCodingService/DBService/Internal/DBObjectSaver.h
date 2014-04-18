@@ -7,10 +7,15 @@
 //
 
 #import <Foundation/Foundation.h>
+
 @class DBEntity;
+@class DBScheme;
+@class DBDatabaseProvider;
 
 @interface DBObjectSaver : NSObject
 
-- (void)save:(id)object withEntity:(DBEntity *)entity completion:(void(^)(BOOL wasInserted, id objectId, NSError * error))completion;
+- (instancetype)initWithScheme:(DBScheme *)scheme;
+
+- (void)save:(id)object withEntity:(DBEntity *)entity provider:(DBDatabaseProvider *)provider completion:(void(^)(BOOL wasInserted, id objectId, NSError * error))completion;
 
 @end

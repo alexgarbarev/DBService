@@ -27,4 +27,12 @@
     return nil;
 }
 
++ (BOOL)isEmptyPrimaryKey:(id)primaryKey
+{
+    return primaryKey == nil
+    || ([primaryKey isKindOfClass:[NSNumber class]] && [primaryKey integerValue] == 0)
+    || ([primaryKey isKindOfClass:[NSString class]] && [primaryKey length] == 0);
+}
+
+
 @end

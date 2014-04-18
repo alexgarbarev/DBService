@@ -7,8 +7,8 @@
 //
 
 #import "DBDatabaseProvider.h"
+#import "DBDatabaseResult.h"
 
-@class FMResultSet;
 @class DBEntity;
 @class DBScheme;
 
@@ -21,7 +21,7 @@ typedef NSUInteger DBObjectDecoderOptions;
 
 - (instancetype)initWithScheme:(DBScheme *)scheme;
 
-- (id)fetchObjectFromResultSet:(FMResultSet *)resultSet entity:(DBEntity *)entity provider:(DBDatabaseProvider *)fetcher options:(DBObjectDecoderOptions)options;
+- (id)fetchObjectFromResult:(id<DBDatabaseResult>)resultSet entity:(DBEntity *)entity provider:(DBDatabaseProvider *)fetcher options:(DBObjectDecoderOptions)options;
 
 - (id)fetchObjectWithId:(id)primaryKeyValue entity:(DBEntity *)entity provider:(DBDatabaseProvider *)fetcher;
 

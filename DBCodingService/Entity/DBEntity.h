@@ -28,4 +28,8 @@ typedef int DBEntityColumnType;
 
 - (DBEntityField *)fieldWithColumn:(NSString *)column;
 
+
++ (BOOL)isEmptyPrimaryKey:(id)primaryKey;
+
+
 @end

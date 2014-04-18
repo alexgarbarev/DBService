@@ -30,7 +30,6 @@ typedef struct {
 - (DBQuery)queryToNullifyField:(DBEntityField *)field withEntity:(DBEntity *)entity primaryKeyValue:(id)primaryKeyValue;
 - (DBQuery)queryToSelectEntity:(DBEntity *)entity withPrimaryKey:(id)primaryKeyValue;
 - (DBQuery)queryToSelectField:(DBEntityField *)field withEntity:(DBEntity *)entity primaryKeyValue:(id)primaryKeyValue;
-
-- (BOOL)isEmptyPrimaryKey:(id)primaryKey;
+- (DBQuery)queryToSelectLatestPrimaryKeyForEntity:(DBEntity *)entity;
 
 @end

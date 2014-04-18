@@ -14,12 +14,9 @@
 
 typedef void(^DBSaveCompletion)(BOOL wasInserted, id objectId, NSError * error);
 typedef void(^DBDeleteCompletion)(NSError *error);
-typedef enum { DBErrorCodeObjectIsNil = 100, DBErrorCodeObjectIsNotExist, DBErrorCodeUnknown } DBErrorCode;
-
 
 @interface DBService : NSObject
 
-- (instancetype)initWithDatabase:(FMDatabase *)database scheme:(DBScheme *)scheme;
 - (instancetype)initWithDatabaseQueue:(FMDatabaseQueue *)queue scheme:(DBScheme *)scheme;
 
 #pragma mark - Saving

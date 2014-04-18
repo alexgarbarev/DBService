@@ -18,8 +18,8 @@
 #import "DBEntityRelationRepresentation.h"
 #import "DBScheme.h"
 #import "DBQueryBuilder.h"
-#import "DBObjectDecoderFetcher.h"
-#import "DBObjectDecoder.h"
+#import "DBDatabaseProvider.h"
+#import "DBObjectFetcher.h"
 #import "DBParentRelation.h"
 
 NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationException";
@@ -42,7 +42,7 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
 
 @property (nonatomic, strong) DBScheme *scheme;
 @property (nonatomic, strong) DBQueryBuilder *queryBuilder;
-@property (nonatomic, strong) DBObjectDecoder *objectDecoder;
+@property (nonatomic, strong) DBObjectFetcher *objectFetcher;
 
 @end
 
@@ -73,7 +73,7 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
 - (void)commonDBServiceInit
 {
     self.queryBuilder = [[DBQueryBuilder alloc] initWithScheme:self.scheme];
-    self.objectDecoder = [[DBObjectDecoder alloc] initWithScheme:self.scheme];
+    self.objectFetcher = [[DBObjectFetcher alloc] initWithScheme:self.scheme];
 }
 
 #pragma mark - Working with FMDB
@@ -320,8 +320,8 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
 {
     __block id object = nil;
     [self executeBlock:^(FMDatabase *db) {
-        DBObjectDecoderFetcher *fetcher = [[DBObjectDecoderFetcher alloc] initWithQueryBuilder:self.queryBuilder database:db];
-        object = [self.objectDecoder objectWithId:objectId entity:entity fromFetcher:fetcher];
+        DBDatabaseProvider *fetcher = [[DBDatabaseProvider alloc] initWithQueryBuilder:self.queryBuilder database:db];
+        object = [self.objectFetcher fetchObjectWithId:objectId entity:entity provider:fetcher];
     }];
     return object;
 }
@@ -330,11 +330,11 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
 {
     NSMutableArray *objects = [NSMutableArray new];
     [self executeBlock:^(FMDatabase *db) {
-        DBObjectDecoderFetcher *fetcher = [[DBObjectDecoderFetcher alloc] initWithQueryBuilder:self.queryBuilder database:db];
+        DBDatabaseProvider *fetcher = [[DBDatabaseProvider alloc] initWithQueryBuilder:self.queryBuilder database:db];
         
         FMResultSet *resultSet = [db executeQuery:query withArgumentsInArray:args];
         while ([resultSet next]) {
-            id object = [self.objectDecoder decodeObjectFromResultSet:resultSet withEntity:entity fetcher:fetcher options:0];
+            id object = [self.objectFetcher fetchObjectFromResultSet:resultSet entity:entity provider:fetcher options:0];
             [objects addObject:object];
         }
         [resultSet close];

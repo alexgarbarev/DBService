@@ -13,7 +13,7 @@
 @class FMResultSet;
 @class DBEntity;
 
-@interface DBObjectDecoderFetcher : NSObject
+@interface DBDatabaseProvider : NSObject
 
 - (instancetype)initWithQueryBuilder:(DBQueryBuilder *)queryBuilder database:(FMDatabase *)db;
 

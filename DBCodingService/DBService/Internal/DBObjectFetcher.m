@@ -6,7 +6,7 @@
 //
 //
 
-#import "DBObjectDecoder.h"
+#import "DBObjectFetcher.h"
 #import "FMResultSet.h"
 #import "DBEntity.h"
 #import "DBScheme.h"
@@ -14,11 +14,11 @@
 #import "DBEntityRelationRepresentation.h"
 #import "DBParentRelation.h"
 
-@interface DBObjectDecoder ()
+@interface DBObjectFetcher ()
 @property (nonatomic, strong) DBScheme *scheme;
 @end
 
-@implementation DBObjectDecoder
+@implementation DBObjectFetcher
 
 - (instancetype)initWithScheme:(DBScheme *)scheme
 {
@@ -29,12 +29,12 @@
     return self;
 }
 
-- (id)objectWithId:(id)primaryKeyValue entity:(DBEntity *)entity fromFetcher:(DBObjectDecoderFetcher *)fetcher
+- (id)fetchObjectWithId:(id)primaryKeyValue entity:(DBEntity *)entity provider:(DBDatabaseProvider *)fetcher
 {
     return [self objectWithId:primaryKeyValue entity:entity fromFetcher:fetcher exceptRelations:nil];
 }
 
-- (id)objectWithId:(id)primaryKeyValue entity:(DBEntity *)entity fromFetcher:(DBObjectDecoderFetcher *)fetcher exceptRelations:(NSSet *)relationsToExclude
+- (id)objectWithId:(id)primaryKeyValue entity:(DBEntity *)entity fromFetcher:(DBDatabaseProvider *)fetcher exceptRelations:(NSSet *)relationsToExclude
 {
     id object = nil;
     if (primaryKeyValue && ![primaryKeyValue isKindOfClass:[NSNull class]]) {
@@ -47,12 +47,12 @@
     return object;
 }
 
-- (id)decodeObjectFromResultSet:(FMResultSet *)resultSet withEntity:(DBEntity *)entity fetcher:(DBObjectDecoderFetcher *)fetcher options:(DBObjectDecoderOptions)options
+- (id)fetchObjectFromResultSet:(FMResultSet *)resultSet entity:(DBEntity *)entity provider:(DBDatabaseProvider *)fetcher options:(DBObjectDecoderOptions)options
 {
     return [self decodeObjectFromResultSet:resultSet withEntity:entity fetcher:fetcher options:options exceptRelations:nil];
 }
 
-- (id)decodeObjectFromResultSet:(FMResultSet *)resultSet withEntity:(DBEntity *)entity fetcher:(DBObjectDecoderFetcher *)fetcher options:(DBObjectDecoderOptions)options exceptRelations:(NSSet *)relationsToExclude
+- (id)decodeObjectFromResultSet:(FMResultSet *)resultSet withEntity:(DBEntity *)entity fetcher:(DBDatabaseProvider *)fetcher options:(DBObjectDecoderOptions)options exceptRelations:(NSSet *)relationsToExclude
 {
     NSAssert(!entity.abstract, @"Can't decode object of abstract entity");
     
@@ -69,7 +69,7 @@
     return object;
 }
 
-- (void)decodeParentWithId:(id)parentPrimaryKey inObject:(id)object withParentRelation:(DBParentRelation *)parentRelation fetcher:(DBObjectDecoderFetcher *)fetcher
+- (void)decodeParentWithId:(id)parentPrimaryKey inObject:(id)object withParentRelation:(DBParentRelation *)parentRelation fetcher:(DBDatabaseProvider *)fetcher
 {
     while (parentRelation) {
         FMResultSet *parentResultSet = [fetcher resultSetForPrimaryKeyValue:parentPrimaryKey andEntity:parentRelation.parentEntity];
@@ -83,7 +83,7 @@
     }
 }
 
-- (void)decodedObject:(id)object withResultSet:(FMResultSet *)resultSet entity:(DBEntity *)entity fetcher:(DBObjectDecoderFetcher *)fetcher exceptRelations:(NSSet *)relationsToExclude
+- (void)decodedObject:(id)object withResultSet:(FMResultSet *)resultSet entity:(DBEntity *)entity fetcher:(DBDatabaseProvider *)fetcher exceptRelations:(NSSet *)relationsToExclude
 {
     [self writeObject:object fromResultSet:resultSet usingEntity:entity];
     [self resolveToOneRelationsInObject:object usingEntity:entity andResultSet:resultSet fetcher:fetcher exceptRelations:relationsToExclude];
@@ -105,7 +105,7 @@
     }
 }
 
-- (void)resolveToOneRelationsInObject:(id)object usingEntity:(DBEntity *)entity andResultSet:(FMResultSet *)resultSet fetcher:(DBObjectDecoderFetcher *)fetcher exceptRelations:(NSSet *)relationsToExclude
+- (void)resolveToOneRelationsInObject:(id)object usingEntity:(DBEntity *)entity andResultSet:(FMResultSet *)resultSet fetcher:(DBDatabaseProvider *)fetcher exceptRelations:(NSSet *)relationsToExclude
 {
     NSMutableSet *relationsToResolve = [NSMutableSet new];
     NSMutableSet *circularRelations = [NSMutableSet new];
@@ -128,7 +128,7 @@
     }
 }
 
-- (void)resolveToManyRelationsInObject:(id)object usingEntity:(DBEntity *)entity andResultSet:(FMResultSet *)resultSet fetcher:(DBObjectDecoderFetcher *)fetcher
+- (void)resolveToManyRelationsInObject:(id)object usingEntity:(DBEntity *)entity andResultSet:(FMResultSet *)resultSet fetcher:(DBDatabaseProvider *)fetcher
 {
     
 }

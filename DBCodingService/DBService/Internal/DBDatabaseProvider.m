@@ -6,13 +6,13 @@
 //
 //
 
-#import "DBObjectDecoderFetcher.h"
+#import "DBDatabaseProvider.h"
 #import "DBQueryBuilder.h"
 #import "FMDatabase.h"
 #import "FMResultSet.h"
 #import "DBEntity.h"
 
-@implementation DBObjectDecoderFetcher {
+@implementation DBDatabaseProvider {
     DBQueryBuilder *queryBuilder;
     FMDatabase *db;
 }

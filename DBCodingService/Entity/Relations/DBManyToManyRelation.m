@@ -11,4 +11,15 @@
 
 @implementation DBManyToManyRelation
 
+- (NSString *)columnForEntity:(DBEntity *)entity
+{
+    NSString *column = nil;
+    if ([entity isEqualToEntity:self.fromEntity]) {
+        column = self.fromEntityIdColumn;
+    } else if ([entity isEqualToEntity:self.toEntity]) {
+        column = self.toEntityIdColumn;
+    }
+    return column;
+}
+
 @end

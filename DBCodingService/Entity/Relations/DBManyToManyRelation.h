@@ -16,4 +16,6 @@
 @property (nonatomic, strong) NSString *fromEntityIdColumn;
 @property (nonatomic, strong) NSString *toEntityIdColumn;
 
+- (NSString *)columnForEntity:(DBEntity *)entity;
+
 @end

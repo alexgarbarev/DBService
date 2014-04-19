@@ -21,7 +21,7 @@
  */
 - (void)enumerateToOneRelationsFromEntity:(DBEntity *)entity usingBlock:(void(^)(DBEntityRelationRepresentation *relation, BOOL *stop))block;
 
-- (void)enumerateRelationsFromEntity:(DBEntity *)entity usingBlock:(void(^)(DBEntityRelationRepresentation *, BOOL *stop))block;
+- (void)enumerateRelationsFromEntity:(DBEntity *)entity usingBlock:(void(^)(DBEntityRelationRepresentation *relation, BOOL *stop))block;
 
 - (DBEntity *)entityForClass:(Class)objectClass;
 

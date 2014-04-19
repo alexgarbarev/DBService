@@ -121,10 +121,26 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
             [self save:relatedObject withEntity:[scheme entityForClass:[relatedObject class]] provider:provider exceptRelations:circularRelations completion:nil];
         }
     }
-    
-    
+
     return circularRelations;
 }
+
+- (void)saveToManyRelationsInObject:(id)object withEntity:(DBEntity *)entity provider:(DBDatabaseProvider *)provider
+{
+    [scheme enumerateRelationsFromEntity:entity usingBlock:^(DBEntityRelationRepresentation *relation, BOOL *stop) {
+        if (relation.type == DBEntityRelationTypeOneToMany || relation.type == DBEntityRelationTypeManyToMany) {
+            if (relation.fromField.property) {
+                id objects = [object valueForKey:relation.fromField.property];
+                for (id relatedObject in objects) {
+                    if (relation.type == DBEntityRelationTypeOneToMany) {
+
+                    }
+                }
+            }
+        }
+    }];
+}
+
 
 - (void)processOldValueForRelation:(DBEntityRelationRepresentation *)relation onObject:(id)object provider:(DBDatabaseProvider *)provider
 {

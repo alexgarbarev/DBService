@@ -32,6 +32,11 @@
     return self;
 }
 
+- (void)useDatabase:(FMDatabase *)_db
+{
+    db = _db;
+}
+
 - (id<DBDatabaseResult>)resultFromQuery:(NSString *)query withArgs:(NSArray *)args
 {
     return [db executeQuery:query withArgumentsInArray:args];

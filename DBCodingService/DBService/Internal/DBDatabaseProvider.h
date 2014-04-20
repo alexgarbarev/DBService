@@ -21,6 +21,8 @@ typedef enum { DBErrorCodeObjectIsNil = 100, DBErrorCodeObjectIsNotExist, DBErro
 
 - (instancetype)initWithQueryBuilder:(DBQueryBuilder *)queryBuilder database:(FMDatabase *)db;
 
+- (void)useDatabase:(FMDatabase *)db;
+
 - (id<DBDatabaseResult>)resultForPrimaryKeyValue:(id)primaryKey andEntity:(DBEntity *)entity;
 - (id<DBDatabaseResult>)resultFromQuery:(NSString *)query withArgs:(NSArray *)args;
 

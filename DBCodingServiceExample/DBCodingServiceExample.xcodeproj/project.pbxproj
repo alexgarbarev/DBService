@@ -46,6 +46,8 @@
 		FA4321A018FDD90700387EFE /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B8639D2169EBE0B004C6490 /* ViewController.m */; };
 		FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B4E18F5E07B00A0F79F /* Message.m */; };
 		FA8E6B5218F5E08600A0F79F /* Attachment.m in Sources */ = {isa = PBXBuildFile; fileRef = FA8E6B5118F5E08600A0F79F /* Attachment.m */; };
+		FAE5894A1904551F006A1136 /* DBStack.m in Sources */ = {isa = PBXBuildFile; fileRef = FAE589491904551F006A1136 /* DBStack.m */; };
+		FAE5894D19045533006A1136 /* DBStackItem.m in Sources */ = {isa = PBXBuildFile; fileRef = FAE5894C19045533006A1136 /* DBStackItem.m */; };
 		FAE71D4C18FF2278008DE681 /* Icon.m in Sources */ = {isa = PBXBuildFile; fileRef = FAE71D4B18FF2278008DE681 /* Icon.m */; };
 /* End PBXBuildFile section */
 
@@ -135,6 +137,10 @@
 		FA8E6B5018F5E08600A0F79F /* Attachment.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Attachment.h; sourceTree = "<group>"; };
 		FA8E6B5118F5E08600A0F79F /* Attachment.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Attachment.m; sourceTree = "<group>"; };
 		FAE589061901A698006A1136 /* DBDatabaseResult.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DBDatabaseResult.h; sourceTree = "<group>"; };
+		FAE589481904551F006A1136 /* DBStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBStack.h; sourceTree = "<group>"; };
+		FAE589491904551F006A1136 /* DBStack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBStack.m; sourceTree = "<group>"; };
+		FAE5894B19045533006A1136 /* DBStackItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBStackItem.h; sourceTree = "<group>"; };
+		FAE5894C19045533006A1136 /* DBStackItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBStackItem.m; sourceTree = "<group>"; };
 		FAE71D4A18FF2278008DE681 /* Icon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Icon.h; sourceTree = "<group>"; };
 		FAE71D4B18FF2278008DE681 /* Icon.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Icon.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -339,6 +345,7 @@
 		FA43219918FDAEE200387EFE /* Internal */ = {
 			isa = PBXGroup;
 			children = (
+				FAE5894719045512006A1136 /* Stack */,
 				5BCD08DC190169DD00EB586F /* Query Builder */,
 				5BCD08DD190169E700EB586F /* Database Provider */,
 				FA43219D18FDD8A600387EFE /* DBObjectFetcher.h */,
@@ -391,6 +398,17 @@
 				FA1E3A6B19007C4D00CD36CC /* Child.m */,
 			);
 			path = Model;
+			sourceTree = "<group>";
+		};
+		FAE5894719045512006A1136 /* Stack */ = {
+			isa = PBXGroup;
+			children = (
+				FAE589481904551F006A1136 /* DBStack.h */,
+				FAE589491904551F006A1136 /* DBStack.m */,
+				FAE5894B19045533006A1136 /* DBStackItem.h */,
+				FAE5894C19045533006A1136 /* DBStackItem.m */,
+			);
+			path = Stack;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -553,6 +571,8 @@
 				FA06CF3018FC77B0006E94CF /* DBEntity.m in Sources */,
 				FA1E3A6919007C4500CD36CC /* Parent.m in Sources */,
 				FA43218C18FDA0CE00387EFE /* DBEntityRelation.m in Sources */,
+				FAE5894D19045533006A1136 /* DBStackItem.m in Sources */,
+				FAE5894A1904551F006A1136 /* DBStack.m in Sources */,
 				FA1E3A631900698700CD36CC /* DBParentRelation.m in Sources */,
 				FA8E6B4F18F5E07B00A0F79F /* Message.m in Sources */,
 				5B2BED6A18F6905000A089CA /* File.m in Sources */,

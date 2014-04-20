@@ -15,7 +15,20 @@
 #import "DBQueryBuilder.h"
 #import "DBScheme.h"
 #import "DBEntityRelation.h"
+#import "DBStack.h"
 
+typedef void(^DBObjectSaverCompletion)(BOOL wasInserted, id objectId, NSError * error);
+
+
+@interface DBSaveContext : NSObject
+
+@property (nonatomic, strong) DBDatabaseProvider *provider;
+@property (nonatomic, strong) DBStack *stack;
+
+@end
+
+@implementation DBSaveContext
+@end
 
 NSString *DBInvalidCircularRelationException = @"DBInvalidCircularRelationException";
 
@@ -46,6 +59,87 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
 - (void)save:(id)object withEntity:(DBEntity *)entity provider:(DBDatabaseProvider *)provider completion:(void(^)(BOOL wasInserted, id objectId, NSError * error))completion
 {
     [self save:object withEntity:entity provider:provider exceptRelations:nil completion:completion];
+}
+
+- (void)save:(id)object asEntity:(DBEntity *)entity withContext:(DBSaveContext *)context completion:(DBObjectSaverCompletion)completion
+{
+    [self removePrimaryKeyIfEmptyOnObject:object withEntity:entity];
+    
+    DBStackItem *stackItem = [DBStackItem new];
+    stackItem.instance = object;
+    stackItem.entity = entity;
+    [context.stack push:stackItem];
+    
+    //1. Save as parent entity
+    if (entity.parentRelation) {
+        [self save:object asEntity:entity.parentRelation.parentEntity withContext:context completion:nil];
+    }
+    
+    NSError *error = nil;
+    BOOL wasInserted = NO;
+    id objectId = [object valueForKey:entity.primary.property];
+    
+    //2. Save to-one related objects
+    [self saveToOneRelatedObjectsInObject:object withEntity:entity context:context];
+    
+    //3. Save object itself
+    [self saveObject:object withEntity:entity context:context];
+    
+    //3. Save to-many related objects
+
+    [context.stack pop];
+    
+    if (completion) {
+        completion(wasInserted, objectId, error);
+    }
+}
+
+- (void)saveToOneRelatedObjectsInObject:(id)object withEntity:(DBEntity *)entity context:(DBSaveContext *)context
+{
+    [scheme enumerateToOneRelationsFromEntity:entity usingBlock:^(DBEntityRelationRepresentation *relationRep, BOOL *stop) {
+
+        if (![context.stack itemForRelation:relationRep.relation]) {
+            
+            if (relationRep.fromField) {
+                CheckToOneRelation(relationRep.fromField, relationRep.fromEntity);
+                
+                BOOL isCircularRelation = relationRep.toField && relationRep.type == DBEntityRelationTypeOneToOne;
+                if (isCircularRelation) {
+                    CheckToOneRelation(relationRep.toField, relationRep.toEntity);
+                    CheckCircularRelation(object, relationRep);
+                }
+                
+                [self processOldValueForRelation:relationRep onObject:object context:context];
+                
+                /* Save related object */
+                id relatedObject = [object valueForKey:relationRep.fromField.property];
+                if (relatedObject) {
+                    [context.stack useCurrentItemForRelation:relationRep.relation inBlock:^{
+                        [self save:relatedObject asEntity:relationRep.toEntity withContext:context completion:nil];
+                    }];
+                }
+            }
+        }
+        
+    }];
+}
+
+- (void)saveObject:(id)object withEntity:(DBEntity *)entity context:(DBSaveContext *)context
+{
+    NSError *error = nil;
+    id objectId = [object valueForKey:entity.primary.property];
+    BOOL wasInserted = NO;
+
+    if ([context.provider isExistsObject:object withEntity:entity]) {
+        [context.provider updateObject:object withEntity:entity fields:[[entity fields] set] error:&error];
+    } else {
+        id insertedId = [context.provider insertObject:object withEntity:entity fields:[[entity fields] set] tryReplace:NO error:&error];
+        if ([DBEntity isEmptyPrimaryKey:objectId] && insertedId) {
+            objectId = insertedId;
+            [object setValue:objectId forKey:entity.primary.property];
+        }
+        wasInserted = YES;
+    }
 }
 
 - (void)save:(id)object withEntity:(DBEntity *)entity provider:(DBDatabaseProvider *)provider exceptRelations:(NSSet *)relationsToExclude completion:(void(^)(BOOL wasInserted, id objectId, NSError * error))completion
@@ -110,7 +204,7 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
                 
                 [fieldsToSave addObject:fromField];
                 
-                [self processOldValueForRelation:relationRep onObject:object provider:provider];
+//                [self processOldValueForRelation:relationRep onObject:object provider:provider];
             }
         }
     }];
@@ -142,15 +236,15 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
 }
 
 
-- (void)processOldValueForRelation:(DBEntityRelationRepresentation *)relation onObject:(id)object provider:(DBDatabaseProvider *)provider
+- (void)processOldValueForRelation:(DBEntityRelationRepresentation *)relation onObject:(id)object context:(DBSaveContext *)context
 {
     id objectPrimaryKey = [object valueForKey:relation.fromEntity.primary.property];
     if (![DBEntity isEmptyPrimaryKey:objectPrimaryKey]) {
         
-        id oldValueId = [provider valueForField:relation.fromField onEntity:relation.fromEntity withPrimaryKeyValue:objectPrimaryKey];
+        id oldValueId = [context.provider valueForField:relation.fromField onEntity:relation.fromEntity withPrimaryKeyValue:objectPrimaryKey];
         
         if (oldValueId && ![oldValueId isKindOfClass:[NSNull class]]) {
-            [self processChangeFromValueWithId:oldValueId entity:relation.toEntity nullifyField:relation.toField rule:relation.toEntityChangeRule provider:provider];
+            [self processChangeFromValueWithId:oldValueId entity:relation.toEntity nullifyField:relation.toField rule:relation.toEntityChangeRule provider:context.provider];
         }
     }
 }
@@ -181,5 +275,11 @@ static void CheckCircularRelation(id object, DBEntityRelationRepresentation *rel
     }];
 }
 
+- (void)removePrimaryKeyIfEmptyOnObject:(id)object withEntity:(DBEntity *)entity
+{
+    if ([DBEntity isEmptyPrimaryKey:[object valueForKey:entity.primary.property]]) {
+        [object setNilValueForKey:entity.primary.property];
+    }
+}
 
 @end

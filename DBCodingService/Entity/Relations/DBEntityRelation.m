@@ -9,6 +9,7 @@
 #import "DBEntityRelation.h"
 #import "DBEntity.h"
 #import "DBEntityRelationRepresentation.h"
+#import "DBEntityField.h"
 
 @implementation DBEntityRelation
 
@@ -21,6 +22,11 @@
 - (DBEntityRelationRepresentation *)representationFromEntity:(DBEntity *)entity
 {
     return [[DBEntityRelationRepresentation alloc] initWithRelation:self fromEntity:entity];
+}
+
+- (NSString *)description
+{
+    return [NSString stringWithFormat:@"<%@: %p, relation from %@ to %@, connected on fields '%@' <-> '%@'>", [self class], self, [self fromEntity].objectClass, [self toEntity].objectClass, [self fromField].property, [self toField].property];
 }
 
 @end

@@ -11,6 +11,8 @@
 #import "DBEntityRelation.h"
 #import "DBManyToManyRelation.h"
 
+@protocol DBQueryBuilderValueProvider;
+
 @class DBScheme;
 @class DBEntityField;
 
@@ -20,6 +22,8 @@ typedef struct {
 } DBQuery;
 
 @interface DBQueryBuilder : NSObject
+
+@property (nonatomic, weak) id<DBQueryBuilderValueProvider> valueProvider;
 
 - (instancetype)initWithScheme:(DBScheme *)scheme;
 
@@ -31,5 +35,12 @@ typedef struct {
 - (DBQuery)queryToSelectEntity:(DBEntity *)entity withPrimaryKey:(id)primaryKeyValue;
 - (DBQuery)queryToSelectField:(DBEntityField *)field withEntity:(DBEntity *)entity primaryKeyValue:(id)primaryKeyValue;
 - (DBQuery)queryToSelectLatestPrimaryKeyForEntity:(DBEntity *)entity;
+
+@end
+
+@protocol DBQueryBuilderValueProvider <NSObject>
+
+@required
+- (id)valueForField:(DBEntityField *)field onObject:(id)object withEntity:(DBEntity *)entity;
 
 @end

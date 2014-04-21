@@ -8,6 +8,7 @@
 
 #import "DBStack.h"
 #import "DBEntity.h"
+#import "DBEntityRelation.h"
 
 @implementation DBStack {
     NSMutableDictionary *itemsForRelations;
@@ -20,7 +21,8 @@
     self = [super init];
     if (self) {
         stack = [NSMutableArray new];
-        itemsForRelations = (__bridge_transfer NSMutableDictionary *)CFDictionaryCreateMutable(NULL, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+        
+        itemsForRelations = [NSMutableDictionary new];
     }
     return self;
 }
@@ -29,11 +31,11 @@
 {
     NSAssert(itemsForRelations[relation] == nil, @"Item already exists for %@ relations", relation);
 
-    itemsForRelations[(id)relation] = item;
+    itemsForRelations[[relation description]] = item;
     
     block();
     
-    itemsForRelations[(id)relation] = nil;
+    [itemsForRelations removeObjectForKey:[relation description]];
 }
 
 - (DBStackItem *)itemForEntity:(DBEntity *)entity withPrimaryKey:(id)primaryKeyValue
@@ -56,7 +58,7 @@
 
 - (DBStackItem *)itemForRelation:(DBEntityRelation *)relation
 {
-    return itemsForRelations[(id)relation];
+    return itemsForRelations[[relation description]];
 }
 
 - (void)push:(DBStackItem *)item

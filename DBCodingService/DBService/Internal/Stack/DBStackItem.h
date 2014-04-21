@@ -17,6 +17,7 @@
 
 @property (nonatomic, readonly) id primaryKey;
 
+- (void)updatePrimaryKey;
 - (void)waitForPrimaryKeyInBlock:(void(^)(id primaryKey))block;
 
 @end
